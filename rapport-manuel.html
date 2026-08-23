@@ -404,18 +404,10 @@ const CHAPTERS = [
 let ncCounter = 0;
 let photoBlockCounter = 0;
 
-/* ================= TABLEAU DE BORD — génération des 6 cellules de chapitre ================= */
-(function buildZoneGrid() {
-  const grid = document.getElementById('zoneGrid');
-  CHAPTERS.forEach(function(ch) {
-    const cell = document.createElement('div');
-    cell.className = 'zone-cell';
-    cell.innerHTML = '<div class="zname">' + ch.name.toUpperCase() + '</div><input type="number" class="zscore v" data-zone="' + ch.key + '" min="0" max="100" value="100">';
-    grid.appendChild(cell);
-  });
-})();
+/* ================= SCORE — couleur automatique + calcul auto depuis les réponses ================= */
+const chapterScoreDirty = {}; // qid -> true si l'utilisateur a modifié manuellement le score du chapitre
+let globalScoreDirty = false;
 
-/* ================= SCORE — couleur automatique selon la valeur saisie ================= */
 function pctClass(v) {
   v = parseFloat(v);
   if (isNaN(v)) return 'v';
@@ -425,16 +417,73 @@ function pctClass(v) {
 }
 function pctFullClass(short) { return short === 'v' ? 'vert' : (short === 'j' ? 'jaune' : 'rouge'); }
 
+function applyPctColor(el, shortClassPrefix) {
+  // shortClassPrefix: 'v'/'j'/'r' pour .zscore, ou classe complète 'vert'/'jaune'/'rouge' pour .pct
+  const isGlobal = el.id === 'globalPct';
+  el.classList.remove('v','j','r','vert','jaune','rouge');
+  if (isGlobal) el.classList.add(pctFullClass(pctClass(el.value)));
+  else el.classList.add(pctClass(el.value));
+}
+
 document.getElementById('globalPct').addEventListener('input', function() {
-  this.classList.remove('vert','jaune','rouge');
-  this.classList.add(pctFullClass(pctClass(this.value)));
+  globalScoreDirty = true;
+  applyPctColor(this);
 });
-document.querySelectorAll('.zscore').forEach(function(el) {
-  el.addEventListener('input', function() {
-    this.classList.remove('v','j','r');
-    this.classList.add(pctClass(this.value));
+
+function computeChapterDeduction(chKey) {
+  let points = 0;
+  Object.keys(questionnaireState).forEach(function(qid) {
+    if (qid.indexOf(chKey + '_') === 0) {
+      const sev = questionnaireState[qid];
+      if (CRIT_META[sev]) points += CRIT_META[sev].points;
+    }
   });
-});
+  return points;
+}
+
+function refreshChapterScore(chKey) {
+  const input = document.querySelector('.zscore[data-zone="' + chKey + '"]');
+  if (!input) return;
+  if (!chapterScoreDirty[chKey]) {
+    const deduction = computeChapterDeduction(chKey);
+    const score = Math.max(0, 100 - deduction);
+    input.value = score;
+    applyPctColor(input);
+  }
+  refreshGlobalScore();
+}
+
+function refreshGlobalScore() {
+  if (globalScoreDirty) return;
+  const inputs = document.querySelectorAll('.zscore');
+  if (inputs.length === 0) return;
+  let sum = 0;
+  inputs.forEach(function(el) { sum += parseFloat(el.value) || 0; });
+  const avg = Math.round(sum / inputs.length);
+  const globalEl = document.getElementById('globalPct');
+  globalEl.value = avg;
+  applyPctColor(globalEl);
+}
+
+/* ================= TABLEAU DE BORD — génération des 6 cellules de chapitre ================= */
+(function buildZoneGrid() {
+  const grid = document.getElementById('zoneGrid');
+  CHAPTERS.forEach(function(ch) {
+    const cell = document.createElement('div');
+    cell.className = 'zone-cell';
+    cell.innerHTML = '<div class="zname">' + ch.name.toUpperCase() + '</div><input type="number" class="zscore v" data-zone="' + ch.key + '" min="0" max="100" value="100">';
+    grid.appendChild(cell);
+  });
+  grid.querySelectorAll('.zscore').forEach(function(el) {
+    el.addEventListener('input', function() {
+      chapterScoreDirty[this.getAttribute('data-zone')] = true;
+      applyPctColor(this);
+      refreshGlobalScore();
+    });
+  });
+})();
+
+
 
 /* ================= AJOUT D'UN BLOC PHOTO ================= */
 document.getElementById('addPhotoBlockBtn').addEventListener('click', addPhotoBlock);
@@ -717,6 +766,12 @@ function resetPillForQid(qid) {
   const item = document.querySelector('.qitem[data-qid="' + qid + '"]');
   if (!item) return;
   item.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('active'); });
+  item.querySelectorAll('.pill-alt').forEach(function(p) { p.classList.remove('active'); });
+  delete questionnaireState[qid];
+  const chKey = qid.substring(0, qid.indexOf('_'));
+  updateZoneSummary(chKey);
+  updateGlobalProgress();
+  refreshChapterScore(chKey);
 }
 
 /* ================= QUESTIONNAIRE D'INSPECTION PAR CHAPITRE ================= */
@@ -851,6 +906,7 @@ function handleQuestionAnswer(chKey, itemEl, qid, sev, tempValue) {
   questionnaireState[qid] = sev;
   updateZoneSummary(chKey);
   updateGlobalProgress();
+  refreshChapterScore(chKey);
 
   if (sev === 'conf' || sev === 'na' || sev === 'nv') return;
 
