@@ -178,17 +178,19 @@
   <div class="tagline">INSPECTION MANUELLE · TERRAIN</div>
   <h1>Rapport d'inspection en hygiène et salubrité alimentaire</h1>
   <div class="ref">Réf. <input id="refInput" value="MAPAQ-2026-0822-001" style="background:transparent;border:none;color:#D4C28E;font-size:13px;text-align:center;width:200px;"></div>
+  <div id="saveIndicator" style="font-size:10px;color:#9C7F3D;letter-spacing:1px;margin-top:6px;">💾 Sauvegarde automatique activée</div>
 </div>
 
 <div class="body-content">
 
   <!-- ===== IDENTIFICATION ===== -->
   <div class="section-title">Identification de l'établissement</div>
+  <button class="btn-outline no-print" id="resetInspectionBtn" style="margin-bottom:14px;">🗑 Nouvelle inspection (efface tout)</button>
   <div class="id-grid">
-    <div class="id-field"><label>Établissement</label><input type="text" placeholder="Nom de l'établissement"></div>
-    <div class="id-field"><label>Adresse</label><input type="text" placeholder="Adresse complète"></div>
-    <div class="id-field"><label>Responsable sur place</label><input type="text" placeholder="Nom et titre"></div>
-    <div class="id-field"><label>Date d'inspection</label><input type="date"></div>
+    <div class="id-field"><label>Établissement</label><input type="text" id="fEtab" placeholder="Nom de l'établissement"></div>
+    <div class="id-field"><label>Adresse</label><input type="text" id="fAdresse" placeholder="Adresse complète"></div>
+    <div class="id-field"><label>Responsable sur place</label><input type="text" id="fResp" placeholder="Nom et titre"></div>
+    <div class="id-field"><label>Date d'inspection</label><input type="date" id="fDate"></div>
   </div>
 
   <!-- ===== QUESTIONNAIRE D'INSPECTION PAR ZONE ===== -->
@@ -428,6 +430,7 @@ function applyPctColor(el, shortClassPrefix) {
 document.getElementById('globalPct').addEventListener('input', function() {
   globalScoreDirty = true;
   applyPctColor(this);
+  saveState();
 });
 
 function computeChapterDeduction(chKey) {
@@ -479,6 +482,7 @@ function refreshGlobalScore() {
       chapterScoreDirty[this.getAttribute('data-zone')] = true;
       applyPctColor(this);
       refreshGlobalScore();
+      saveState();
     });
   });
 })();
@@ -733,7 +737,7 @@ function addPacCard(titre, delai, ref, action, qid) {
 }
 
 function removeCardsForQid(qid) {
-  document.querySelectorAll('[data-qid="' + qid + '"]').forEach(function(el) { el.remove(); });
+  document.querySelectorAll('.nc-card[data-qid="' + qid + '"], .action-card[data-qid="' + qid + '"]').forEach(function(el) { el.remove(); });
   if (!document.getElementById('ncList').querySelector('.nc-card')) {
     document.getElementById('ncList').innerHTML = '<div class="nc-empty">Aucune non-conformité ajoutée pour l\'instant.</div>';
   }
@@ -768,14 +772,17 @@ function resetPillForQid(qid) {
   item.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('active'); });
   item.querySelectorAll('.pill-alt').forEach(function(p) { p.classList.remove('active'); });
   delete questionnaireState[qid];
+  delete tempAnswerValues[qid];
   const chKey = qid.substring(0, qid.indexOf('_'));
   updateZoneSummary(chKey);
   updateGlobalProgress();
   refreshChapterScore(chKey);
+  saveState();
 }
 
 /* ================= QUESTIONNAIRE D'INSPECTION PAR CHAPITRE ================= */
-const questionnaireState = {}; // qid -> severity ('conf'|'maj'|'crit')
+const questionnaireState = {}; // qid -> severity ('conf'|'maj'|'crit'|'min'|'mod'|'na'|'nv')
+const tempAnswerValues = {}; // qid -> valeur numérique saisie pour les critères de type température
 
 function defaultDelai(sev) {
   if (sev === 'crit') return 'imm';
@@ -846,24 +853,14 @@ function buildQuestionnaire() {
       pills.forEach(function(pill) {
         pill.addEventListener('click', function() {
           const sev = pill.getAttribute('data-sev');
-          pills.forEach(function(p) { p.classList.remove('active'); });
-          altPills.forEach(function(p) { p.classList.remove('active'); });
-          pill.classList.add('active');
-          handleQuestionAnswer(ch.key, item, qid, sev);
+          applyAnswerUI(ch.key, item, qid, sev);
         });
       });
       // Brancher N/A et Non vérifiable (disponibles pour tous les types de critères)
       altPills.forEach(function(altPill) {
         altPill.addEventListener('click', function() {
           const sev = altPill.getAttribute('data-sev');
-          pills.forEach(function(p) { p.classList.remove('active'); });
-          altPills.forEach(function(p) { p.classList.remove('active'); });
-          altPill.classList.add('active');
-          const resultEl = item.querySelector('[data-role="result"]');
-          if (resultEl) { resultEl.className = 'temp-result wait'; resultEl.textContent = sev === 'na' ? 'N/A' : 'Non vérifiable'; }
-          const tempInput = item.querySelector('.tempInput');
-          if (tempInput) tempInput.value = '';
-          handleQuestionAnswer(ch.key, item, qid, sev);
+          applyAnswerUI(ch.key, item, qid, sev);
         });
       });
     });
@@ -873,23 +870,46 @@ function buildQuestionnaire() {
       input.addEventListener('input', function() {
         const qid = this.getAttribute('data-qid');
         const item = this.closest('.qitem');
-        const resultEl = item.querySelector('[data-role="result"]');
         item.querySelectorAll('.pill-alt').forEach(function(p) { p.classList.remove('active'); });
         const v = parseFloat(this.value);
         if (isNaN(v)) {
+          const resultEl = item.querySelector('[data-role="result"]');
           resultEl.className = 'temp-result wait';
           resultEl.textContent = 'En attente';
           return;
         }
         const qDef = findQuestionDef(qid);
         const sev = qDef.evalFn(v);
-        resultEl.className = 'temp-result ' + sev;
-        resultEl.textContent = CRIT_META[sev].label + ' · ' + v + '°C';
-        handleQuestionAnswer(ch.key, item, qid, sev, v);
+        applyAnswerUI(ch.key, item, qid, sev, v, true);
       });
     });
   });
   updateGlobalProgress();
+}
+
+/* Applique visuellement une réponse (pills + champ température) puis enregistre l'état.
+   skipTempInputUpdate: true quand appelé depuis l'input température lui-même (pour ne pas écraser ce que l'utilisateur tape) */
+function applyAnswerUI(chKey, item, qid, sev, tempValue, skipTempInputUpdate) {
+  const pills = item.querySelectorAll('.pill');
+  const altPills = item.querySelectorAll('.pill-alt');
+  pills.forEach(function(p) { p.classList.remove('active'); });
+  altPills.forEach(function(p) { p.classList.remove('active'); });
+  if (sev === 'na' || sev === 'nv') {
+    altPills.forEach(function(p) { if (p.getAttribute('data-sev') === sev) p.classList.add('active'); });
+  } else {
+    pills.forEach(function(p) { if (p.getAttribute('data-sev') === sev) p.classList.add('active'); });
+  }
+  const resultEl = item.querySelector('[data-role="result"]');
+  const tempInput = item.querySelector('.tempInput');
+  if (resultEl) {
+    if (sev === 'na') { resultEl.className = 'temp-result wait'; resultEl.textContent = 'N/A'; }
+    else if (sev === 'nv') { resultEl.className = 'temp-result wait'; resultEl.textContent = 'Non vérifiable'; }
+    else if (tempInput) { resultEl.className = 'temp-result ' + sev; resultEl.textContent = CRIT_META[sev].label + ' · ' + tempValue + '°C'; }
+  }
+  if (tempInput && !skipTempInputUpdate) {
+    tempInput.value = (sev === 'na' || sev === 'nv') ? '' : (tempValue !== undefined ? tempValue : tempInput.value);
+  }
+  handleQuestionAnswer(chKey, item, qid, sev, tempValue);
 }
 
 function findQuestionDef(qid) {
@@ -904,18 +924,20 @@ function handleQuestionAnswer(chKey, itemEl, qid, sev, tempValue) {
   const qDef = findQuestionDef(qid);
   removeCardsForQid(qid);
   questionnaireState[qid] = sev;
+  if (tempValue !== undefined && tempValue !== null && !isNaN(tempValue)) tempAnswerValues[qid] = tempValue;
   updateZoneSummary(chKey);
   updateGlobalProgress();
   refreshChapterScore(chKey);
 
-  if (sev === 'conf' || sev === 'na' || sev === 'nv') return;
-
-  let titre = qDef.label;
-  if (qDef.type === 'temp') titre += ' — valeur mesurée: ' + tempValue + '°C';
-  const refText = chapterName(chKey) + ' · ' + qDef.ref + (qDef.risque ? ' · ' + qDef.risque : '');
-  const delai = defaultDelai(sev);
-  addNcCard(titre, sev, refText, qid);
-  addPacCard(titre, delai, qDef.ref, 'Corriger la non-conformité identifiée lors du questionnaire.', qid);
+  if (sev !== 'conf' && sev !== 'na' && sev !== 'nv') {
+    let titre = qDef.label;
+    if (qDef.type === 'temp') titre += ' — valeur mesurée: ' + tempValue + '°C';
+    const refText = chapterName(chKey) + ' · ' + qDef.ref + (qDef.risque ? ' · ' + qDef.risque : '');
+    const delai = defaultDelai(sev);
+    addNcCard(titre, sev, refText, qid);
+    addPacCard(titre, delai, qDef.ref, 'Corriger la non-conformité identifiée lors du questionnaire.', qid);
+  }
+  saveState();
 }
 
 function updateZoneSummary(chKey) {
@@ -947,7 +969,136 @@ function updateGlobalProgress() {
 }
 
 
+/* ================= SAUVEGARDE / RESTAURATION AUTOMATIQUE (localStorage) ================= */
+const STORAGE_KEY = 'verdict360_rapport_manuel_v1';
+let restoringState = false;
+
+function saveState() {
+  if (restoringState) return;
+  try {
+    const chapterScores = {};
+    document.querySelectorAll('.zscore').forEach(function(el) {
+      chapterScores[el.getAttribute('data-zone')] = { value: el.value, dirty: !!chapterScoreDirty[el.getAttribute('data-zone')] };
+    });
+    const state = {
+      savedAt: new Date().toISOString(),
+      ident: {
+        etab: (document.getElementById('fEtab') || {}).value || '',
+        adresse: (document.getElementById('fAdresse') || {}).value || '',
+        resp: (document.getElementById('fResp') || {}).value || '',
+        date: (document.getElementById('fDate') || {}).value || ''
+      },
+      ref: (document.getElementById('refInput') || {}).value || '',
+      delaiSuivi: (document.getElementById('delaiSuivi') || {}).value || '',
+      questionnaireState: questionnaireState,
+      tempAnswerValues: tempAnswerValues,
+      chapterScores: chapterScores,
+      globalScore: { value: (document.getElementById('globalPct') || {}).value || '100', dirty: globalScoreDirty }
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const ind = document.getElementById('saveIndicator');
+    if (ind) {
+      ind.textContent = '💾 Sauvegardé automatiquement';
+      clearTimeout(window._saveIndTimeout);
+      window._saveIndTimeout = setTimeout(function() {
+        if (ind) ind.textContent = '💾 Sauvegarde automatique activée';
+      }, 1500);
+    }
+  } catch (e) {
+    console.error('saveState error', e);
+  }
+}
+
+function loadState() {
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  let state;
+  try { state = JSON.parse(raw); } catch (e) { return; }
+  if (!state) return;
+
+  restoringState = true;
+  try {
+    if (state.ident) {
+      if (document.getElementById('fEtab')) document.getElementById('fEtab').value = state.ident.etab || '';
+      if (document.getElementById('fAdresse')) document.getElementById('fAdresse').value = state.ident.adresse || '';
+      if (document.getElementById('fResp')) document.getElementById('fResp').value = state.ident.resp || '';
+      if (document.getElementById('fDate')) document.getElementById('fDate').value = state.ident.date || '';
+    }
+    if (state.ref && document.getElementById('refInput')) document.getElementById('refInput').value = state.ref;
+    if (state.delaiSuivi && document.getElementById('delaiSuivi')) document.getElementById('delaiSuivi').value = state.delaiSuivi;
+
+    // Rejoue chaque réponse enregistrée pour régénérer pills, cartes NC/PAC et scores
+    if (state.questionnaireState) {
+      Object.keys(state.questionnaireState).forEach(function(qid) {
+        const sev = state.questionnaireState[qid];
+        const item = document.querySelector('.qitem[data-qid="' + qid + '"]');
+        if (!item) return;
+        const chKey = qid.substring(0, qid.indexOf('_'));
+        const tempValue = state.tempAnswerValues ? state.tempAnswerValues[qid] : undefined;
+        applyAnswerUI(chKey, item, qid, sev, tempValue, false);
+      });
+    }
+
+    // Applique les scores manuels sauvegardés (écrase les valeurs recalculées si l'utilisateur les avait modifiées)
+    if (state.chapterScores) {
+      Object.keys(state.chapterScores).forEach(function(chKey) {
+        const saved = state.chapterScores[chKey];
+        const input = document.querySelector('.zscore[data-zone="' + chKey + '"]');
+        if (!input || !saved) return;
+        if (saved.dirty) {
+          chapterScoreDirty[chKey] = true;
+          input.value = saved.value;
+          applyPctColor(input);
+        }
+      });
+    }
+    if (state.globalScore && state.globalScore.dirty) {
+      globalScoreDirty = true;
+      const globalEl = document.getElementById('globalPct');
+      globalEl.value = state.globalScore.value;
+      applyPctColor(globalEl);
+    } else {
+      refreshGlobalScore();
+    }
+
+    // Ouvre les chapitres qui contiennent au moins une réponse, pour montrer où l'inspecteur en était
+    CHAPTERS.forEach(function(ch) {
+      const hasAnswer = Object.keys(questionnaireState).some(function(qid) { return qid.indexOf(ch.key + '_') === 0; });
+      if (hasAnswer) {
+        const block = document.getElementById('qz_' + ch.key);
+        if (block) block.classList.add('open');
+      }
+    });
+
+    const ind = document.getElementById('saveIndicator');
+    if (ind) ind.textContent = '💾 Inspection précédente restaurée';
+  } catch (e) {
+    console.error('loadState error', e);
+  } finally {
+    restoringState = false;
+  }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// Sauvegarde automatique des champs qui ne passent pas par handleQuestionAnswer
+['fEtab','fAdresse','fResp','fDate','refInput','delaiSuivi'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', saveState);
+});
+document.getElementById('resetInspectionBtn').addEventListener('click', function() {
+  if (confirm('Effacer toutes les réponses et recommencer une nouvelle inspection? Cette action est irréversible.')) {
+    clearSavedState();
+    location.reload();
+  }
+});
+
+
 buildQuestionnaire();
+loadState();
 // pacPla n'existe pas encore en tant que div distinct — on le crée si besoin
 (function ensurePacPla() {
   if (!document.getElementById('pacPla')) {
