@@ -41,11 +41,11 @@
   .qitem-label { font-size:13px; color:#333; margin-bottom:6px; }
   .pill-row { display:flex; gap:4px; }
   .pill { flex:1; text-align:center; font-size:10px; font-weight:700; padding:8px 2px; border-radius:8px; border:1px solid #ddd; background:#fff; color:#888; cursor:pointer; user-select:none; line-height:1.3; }
-  .pill.active.conf { background:#66BB6A; color:#fff; border-color:#66BB6A; }
-  .pill.active.min  { background:#FDD835; color:#1A1A1A; border-color:#FDD835; }
-  .pill.active.mod  { background:#FFA726; color:#fff; border-color:#FFA726; }
-  .pill.active.maj  { background:#FF7043; color:#fff; border-color:#FF7043; }
-  .pill.active.crit { background:#E53935; color:#fff; border-color:#E53935; }
+  .pill.active[data-sev="conf"] { background:#66BB6A; color:#fff; border-color:#66BB6A; }
+  .pill.active[data-sev="min"]  { background:#FDD835; color:#1A1A1A; border-color:#FDD835; }
+  .pill.active[data-sev="mod"]  { background:#FFA726; color:#fff; border-color:#FFA726; }
+  .pill.active[data-sev="maj"]  { background:#FF7043; color:#fff; border-color:#FF7043; }
+  .pill.active[data-sev="crit"] { background:#E53935; color:#fff; border-color:#E53935; }
   .pill-row-alt { display:flex; gap:4px; margin-top:4px; }
   .pill-alt { flex:1; text-align:center; font-size:10px; font-weight:600; padding:6px 2px; border-radius:8px; border:1px dashed #ccc; background:#fff; color:#999; cursor:pointer; user-select:none; }
   .pill-alt.active { background:#546E7A; color:#fff; border-color:#546E7A; border-style:solid; }
