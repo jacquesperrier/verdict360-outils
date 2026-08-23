@@ -1,1 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réunion Pré Service — Chartwell Le Plateau</title>
+<style>
+  :root{
+    --navy:#1B2A4A;
+    --navy-dark:#101B33;
+    --gold:#B8954A;
+    --bg:#F4F5F7;
+    --card:#FFFFFF;
+    --line:#D8DCE3;
+    --text:#232733;
+    --muted:#6B7280;
+    --ok:#2E7D32;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:60px;
+  }
+  header{
+    background:var(--navy);
+    color:#fff;
+    padding:18px 16px 16px;
+    position:sticky;
+    top:0;
+    z-index:10;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  header .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  header h1{
+    font-size:1.15rem;
+    margin:0;
+    font-weight:700;
+  }
+  header .tag{
+    font-size:.7rem;
+    letter-spacing:.06em;
+    color:#C9CEDA;
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+  .confid{
+    font-size:.65rem;
+    text-align:center;
+    background:var(--navy-dark);
+    color:#B8C0D4;
+    padding:5px;
+    letter-spacing:.04em;
+  }
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px;
+  }
+  .meta-card{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .field{flex:1;min-width:130px;}
+  .field label{
+    display:block;
+    font-size:.72rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:4px;
+  }
+  input[type=text], input[type=date], textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 10px;
+    font-size:1rem;
+    font-family:inherit;
+    background:#fff;
+    color:var(--text);
+  }
+  textarea{resize:vertical;min-height:44px;}
+  .q{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px 16px 16px;
+    margin-bottom:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .q-head{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    margin-bottom:10px;
+  }
+  .num{
+    flex:none;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#fff;
+    font-size:.8rem;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .q-title{
+    font-size:.95rem;
+    font-weight:600;
+    line-height:1.3;
+  }
+  .q-sub{
+    font-size:.8rem;
+    color:var(--muted);
+    margin-top:2px;
+    font-weight:400;
+  }
+  .sections-row{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+    margin-top:6px;
+  }
+  .sections-row .field label{text-align:center;font-size:.68rem;}
+  .sections-row input{text-align:center;padding:8px 4px;}
 
+  table.grid{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:6px;
+    font-size:.82rem;
+  }
+  table.grid th{
+    background:var(--navy);
+    color:#fff;
+    font-size:.72rem;
+    padding:7px 4px;
+    text-align:left;
+    font-weight:600;
+  }
+  table.grid td{
+    border:1px solid var(--line);
+    padding:2px;
+  }
+  table.grid td input{
+    border:none;
+    padding:7px 5px;
+    font-size:.82rem;
+    border-radius:0;
+  }
+  table.grid td input:focus{outline:2px solid var(--gold); outline-offset:-2px;}
+  .add-row{
+    margin-top:8px;
+    background:none;
+    border:1px dashed var(--line);
+    color:var(--muted);
+    padding:7px 10px;
+    border-radius:8px;
+    font-size:.78rem;
+    cursor:pointer;
+    width:100%;
+  }
+  .add-row:active{background:#EEF0F3;}
+
+  .initiales-wrap{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:6px;
+  }
+  .initiales-wrap input{
+    width:64px;
+    text-align:center;
+    text-transform:uppercase;
+  }
+
+  .actions{
+    position:sticky;
+    bottom:0;
+    background:linear-gradient(to top, var(--bg) 70%, transparent);
+    padding:14px 0 4px;
+    display:flex;
+    gap:10px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-size:.95rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:var(--navy);
+    color:#fff;
+  }
+  .btn-secondary{
+    background:#fff;
+    color:var(--navy);
+    border:1px solid var(--navy);
+  }
+  .status{
+    text-align:center;
+    font-size:.75rem;
+    color:var(--ok);
+    height:16px;
+    margin-top:4px;
+  }
+  footer{
+    text-align:center;
+    font-size:.65rem;
+    color:var(--muted);
+    padding:10px 16px 4px;
+  }
+
+  @media print{
+    header, .actions, .add-row{display:none;}
+    body{background:#fff;}
+    .q, .meta-card{box-shadow:none;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+
+<div class="confid">DOCUMENT CONFIDENTIEL — POUR DIFFUSION INTERNE RESTREINTE SEULEMENT</div>
+<header>
+  <div class="brand">
+    <div>
+      <h1>Réunion Pré Service</h1>
+      <div class="tag">Chartwell Le Plateau · Salle à manger</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="meta-card">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>Repas</label>
+      <input type="text" id="f-repas" placeholder="Dîner / Souper">
+    </div>
+    <div class="field">
+      <label>Responsable</label>
+      <input type="text" id="f-resp" placeholder="Nom">
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">1</div>
+      <div>
+        <div class="q-title">Rotation des sections</div>
+        <div class="q-sub">Tirage des sections — serveur chargé de chaque section</div>
+      </div>
+    </div>
+    <div class="sections-row">
+      <div class="field"><label>1</label><input type="text" id="s1"></div>
+      <div class="field"><label>2</label><input type="text" id="s2"></div>
+      <div class="field"><label>3</label><input type="text" id="s3"></div>
+      <div class="field"><label>4</label><input type="text" id="s4"></div>
+      <div class="field"><label>5</label><input type="text" id="s5"></div>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">2</div>
+      <div>
+        <div class="q-title">Plats servis</div>
+        <div class="q-sub">Description, dégustation par le personnel, présentation des assiettes, accompagnements, condiments, variantes, desserts</div>
+      </div>
+    </div>
+    <textarea id="q2" rows="4" placeholder="Notes..."></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">3</div>
+      <div>
+        <div class="q-title">Substitutions, ruptures, allergies, congés</div>
+        <div class="q-sub">Plats à substituer ou recommander · ruptures de stock · allergies / demandes spéciales · congés autorisés / hôpital / sortie</div>
+      </div>
+    </div>
+    <table class="grid" id="table3">
+      <thead>
+        <tr>
+          <th>Plats à substituer / recommander</th>
+          <th>Ruptures de stock</th>
+          <th>Allergies / demandes</th>
+          <th>Congés / hôpital / sortie</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+        <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+        <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+      </tbody>
+    </table>
+    <button class="add-row" onclick="addRow()">+ Ajouter une ligne</button>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">4</div>
+      <div class="q-title">Invités dans la salle à manger</div>
+    </div>
+    <textarea id="q4" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">5</div>
+      <div class="q-title">Visites personnalisées de marketing et arrivée de nouveaux résidents</div>
+    </div>
+    <textarea id="q5" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">6</div>
+      <div class="q-title">Anniversaires ou événements spéciaux</div>
+    </div>
+    <textarea id="q6" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">7</div>
+      <div class="q-title">Problèmes de santé et de sécurité</div>
+    </div>
+    <textarea id="q7" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">8</div>
+      <div>
+        <div class="q-title">Températures et équipements</div>
+        <div class="q-sub">Températures mesurées? Problèmes réfrigérateur / congélateur / nourriture / lave-vaisselle?</div>
+      </div>
+    </div>
+    <textarea id="q8" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">9</div>
+      <div class="q-title">Porte-noms et code vestimentaire</div>
+    </div>
+    <textarea id="q9" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">10</div>
+      <div class="q-title">Rappels liés aux événements (ex. film ou activité)</div>
+    </div>
+    <textarea id="q10" rows="2"></textarea>
+  </div>
+
+  <div class="q">
+    <div class="q-head">
+      <div class="num">✓</div>
+      <div class="q-title">Initiales du personnel</div>
+    </div>
+    <div class="initiales-wrap" id="initiales">
+      <input type="text" maxlength="4">
+      <input type="text" maxlength="4">
+      <input type="text" maxlength="4">
+      <input type="text" maxlength="4">
+      <input type="text" maxlength="4">
+      <input type="text" maxlength="4">
+    </div>
+    <button class="add-row" onclick="addInitiale()">+ Ajouter</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="window.print()">Imprimer / PDF</button>
+    <button class="btn btn-primary" onclick="saveLocal()">Enregistrer</button>
+  </div>
+  <div class="status" id="status"></div>
+</main>
+
+<footer>
+  © Société en commandite Chartwell Master Care · Réunion-de-pré-service-FR<br>
+  Outil interne — Jacques Perrier, DSA
+</footer>
+
+<script>
+function addRow(){
+  const tbody = document.querySelector('#table3 tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>';
+  tbody.appendChild(tr);
+}
+function addInitiale(){
+  const wrap = document.getElementById('initiales');
+  const inp = document.createElement('input');
+  inp.type='text'; inp.maxLength=4;
+  wrap.appendChild(inp);
+}
+function saveLocal(){
+  const status = document.getElementById('status');
+  status.textContent = 'Enregistré ✓ (' + new Date().toLocaleTimeString('fr-CA') + ')';
+  setTimeout(()=>{status.textContent='';}, 3000);
+}
+</script>
+
+</body>
+</html>
