@@ -1,2 +1,1186 @@
 
-  
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rapport d'inspection MAPAQ — Verdict 360 AI (Manuel)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; background:#fff; color:#1a1a1a; line-height:1.5; }
+
+  /* ===== EN-TÊTE NOIR / OR BROSSÉ ===== */
+  .hero { background:#1A1A1A !important; color:#fff; padding:28px 20px; border-bottom:4px solid #9C7F3D; text-align:center; }
+  .hero .logo { font-family: Georgia, 'Times New Roman', serif; font-size:36px; font-weight:bold; letter-spacing:1px; margin-bottom:4px; }
+  .hero .logo span { background: linear-gradient(110deg, #9C7F3D 0%, #B8954A 35%, #F0E4C0 50%, #B8954A 65%, #9C7F3D 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero .tagline { font-size:11px; letter-spacing:4px; color:#999; margin-bottom:18px; }
+  .hero h1 { font-size:20px; font-weight:700; margin-bottom:4px; }
+  .hero .ref { font-size:13px; color:#D4C28E; }
+
+  .body-content { max-width:680px; margin:0 auto; padding:20px; }
+
+  /* ===== IDENTIFICATION ===== */
+  .id-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
+  .id-field { background:#F8F8F8; border-left:3px solid #9C7F3D; padding:10px 12px; border-radius:4px; }
+  .id-field label { display:block; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+  .id-field input { border:none; background:transparent; font-size:15px; font-weight:600; width:100%; color:#1a1a1a; }
+  .id-field input:focus { outline:1px solid #9C7F3D; }
+
+  /* ===== QUESTIONNAIRE D'INSPECTION PAR ZONE ===== */
+  .qz-block { border:1px solid #eee; border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .qz-header { background:#F8F8F8; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+  .qz-header .qz-title { font-weight:700; font-size:14px; }
+  .qz-header .qz-summary { font-size:11px; color:#888; }
+  .qz-header .qz-caret { font-size:14px; color:#9C7F3D; transition:transform 0.2s; }
+  .qz-block.open .qz-caret { transform:rotate(90deg); }
+  .qz-body { display:none; padding:12px 14px; }
+  .qz-block.open .qz-body { display:block; }
+  .qcat { margin-bottom:16px; }
+  .qcat-title { font-size:13px; font-weight:700; color:#1A1A1A; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .qitem { margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f2f2f2; }
+  .qitem:last-child { border-bottom:none; }
+  .qitem-label { font-size:13px; color:#333; margin-bottom:6px; }
+  .pill-row { display:flex; gap:4px; }
+  .pill { flex:1; text-align:center; font-size:10px; font-weight:700; padding:8px 2px; border-radius:8px; border:1px solid #ddd; background:#fff; color:#888; cursor:pointer; user-select:none; line-height:1.3; }
+  .pill.active.conf { background:#66BB6A; color:#fff; border-color:#66BB6A; }
+  .pill.active.min  { background:#FDD835; color:#1A1A1A; border-color:#FDD835; }
+  .pill.active.mod  { background:#FFA726; color:#fff; border-color:#FFA726; }
+  .pill.active.maj  { background:#FF7043; color:#fff; border-color:#FF7043; }
+  .pill.active.crit { background:#E53935; color:#fff; border-color:#E53935; }
+  .pill-row-alt { display:flex; gap:4px; margin-top:4px; }
+  .pill-alt { flex:1; text-align:center; font-size:10px; font-weight:600; padding:6px 2px; border-radius:8px; border:1px dashed #ccc; background:#fff; color:#999; cursor:pointer; user-select:none; }
+  .pill-alt.active { background:#546E7A; color:#fff; border-color:#546E7A; border-style:solid; }
+  .temp-row { display:flex; align-items:center; gap:8px; }
+  .temp-row input { width:90px; font-size:16px; padding:8px; border:1px solid #ddd; border-radius:6px; text-align:center; }
+  .temp-target { font-size:11px; color:#999; }
+  .temp-result { font-size:11px; font-weight:700; padding:4px 8px; border-radius:10px; margin-left:auto; }
+  .temp-result.conf { background:#E8F5E9; color:#2E7D32; }
+  .temp-result.min  { background:#FFFDE7; color:#9E8600; }
+  .temp-result.mod  { background:#FFF3E0; color:#E65100; }
+  .temp-result.maj  { background:#FBE9E7; color:#D84315; }
+  .temp-result.crit { background:#FFEBEE; color:#C62828; }
+  .temp-result.wait { background:#F1F1F1; color:#999; }
+  .qz-progress { font-size:11px; color:#9C7F3D; margin-top:2px; }
+  .nc-summary { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .nc-summary .chip { font-size:11px; font-weight:700; padding:5px 10px; border-radius:12px; color:#fff; }
+  .nc-summary .chip.conf { background:#66BB6A; }
+  .nc-summary .chip.min  { background:#FDD835; color:#1A1A1A; }
+  .nc-summary .chip.mod  { background:#FFA726; }
+  .nc-summary .chip.maj  { background:#FF7043; }
+  .nc-summary .chip.crit { background:#E53935; }
+  .nc-summary .chip.pts  { background:#1A1A1A; color:#F0E4C0; }
+
+  /* ===== TABLEAU DE BORD / SCORE GLOBAL (SAISIE MANUELLE) ===== */
+  .score-box { background:#1A1A1A; color:#fff; border-radius:10px; padding:24px; text-align:center; margin-bottom:24px; border:1px solid #9C7F3D; }
+  .score-box .pct-row { display:flex; align-items:center; justify-content:center; gap:6px; }
+  .score-box .pct { font-size:48px; font-weight:800; width:110px; background:transparent; border:none; text-align:right; color:#66BB6A; }
+  .score-box .pct.rouge { color:#FF7043; }
+  .score-box .pct.jaune { color:#FFA726; }
+  .score-box .pct.vert  { color:#66BB6A; }
+  .score-box .pct-sign { font-size:34px; font-weight:800; opacity:0.6; }
+  .score-box .label { font-size:13px; letter-spacing:3px; color:#999; margin-top:4px; }
+
+  .zone-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px; }
+  .zone-cell { background:#262626; border-radius:6px; padding:8px 4px; text-align:center; }
+  .zone-cell .zname { font-size:11px; color:#bbb; }
+  .zone-cell .zscore { font-size:18px; font-weight:700; width:100%; background:transparent; border:none; text-align:center; color:#66BB6A; }
+  .zone-cell .zscore.r { color:#FF7043; }
+  .zone-cell .zscore.j { color:#FFA726; }
+  .zone-cell .zscore.v { color:#66BB6A; }
+
+  /* ===== SECTION TITLES ===== */
+  .section-title { font-size:16px; font-weight:700; color:#1A1A1A; border-bottom:2px solid #9C7F3D; padding-bottom:6px; margin:28px 0 14px; display:flex; justify-content:space-between; align-items:center; }
+  .section-title .hint { font-size:11px; font-weight:400; color:#999; letter-spacing:0; }
+
+  /* ===== BOUTONS GÉNÉRAUX ===== */
+  .btn-gold { background: linear-gradient(110deg, #9C7F3D 0%, #B8954A 35%, #F0E4C0 50%, #B8954A 65%, #9C7F3D 100%); color:#1A1A1A; border:none; font-weight:700; font-size:13px; padding:10px 16px; border-radius:8px; width:100%; margin-top:8px; }
+  .btn-outline { background:none; border:1px solid #9C7F3D; color:#9C7F3D; font-size:12px; font-weight:600; padding:8px 14px; border-radius:6px; width:100%; margin-top:8px; }
+  .btn-small { background:#1A1A1A; color:#fff; border:none; font-size:12px; font-weight:600; padding:6px 10px; border-radius:5px; }
+
+  /* ===== PHOTOS / ZONE BLOCK ===== */
+  .photo-block { margin-bottom:18px; border:1px solid #eee; border-radius:10px; padding:12px; }
+  .photo-block-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .photo-block-header select { font-size:13px; font-weight:700; border:1px solid #ddd; border-radius:6px; padding:5px 8px; }
+  .file-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .file-row input[type=file] { font-size:12px; flex:1; }
+  .photo-wrap { position:relative; width:100%; border-radius:8px; overflow:hidden; border:1px solid #ddd; cursor:crosshair; display:none; }
+  .photo-wrap img { width:100%; height:auto; display:block; opacity:0.87; user-select:none; -webkit-user-select:none; pointer-events:none; }
+  .marker { position:absolute; width:26px; height:26px; border-radius:50%; background:#1A1A1A; color:#fff; border:2px solid #9C7F3D; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; transform:translate(-50%,-50%); pointer-events:none; }
+  .photo-caption { font-size:13px; color:#666; margin-top:6px; padding:0 4px; }
+  .photo-caption b { color:#1a1a1a; }
+  .photo-hint { font-size:11px; color:#9C7F3D; margin-top:4px; }
+
+  /* ===== FORMULAIRE OBSERVATION (choix/clic) ===== */
+  .obs-form { background:#FBF9F4; border:1px dashed #9C7F3D; border-radius:8px; padding:12px; margin-top:10px; }
+  .obs-form .marker-tag { display:inline-block; background:#1A1A1A; color:#fff; border:2px solid #9C7F3D; border-radius:50%; width:22px; height:22px; text-align:center; line-height:18px; font-size:11px; font-weight:700; margin-right:6px; }
+  .obs-form label { display:block; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin:8px 0 3px; }
+  .obs-form select, .obs-form input, .obs-form textarea { width:100%; font-size:14px; padding:8px; border:1px solid #ddd; border-radius:6px; font-family:inherit; }
+  .obs-form textarea { min-height:44px; resize:vertical; }
+  .obs-form .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .obs-actions { display:flex; gap:8px; margin-top:10px; }
+  .obs-actions button { flex:1; }
+  .btn-cancel { background:#eee; color:#666; border:none; font-size:12px; font-weight:600; padding:8px; border-radius:6px; }
+
+  /* ===== BADGES NC ===== */
+  .nc-empty { font-size:13px; color:#999; font-style:italic; padding:8px 0; }
+  .nc-card { background:#F8F8F8; border-radius:8px; padding:12px 14px; margin-bottom:10px; border-left:4px solid #ccc; position:relative; }
+  .nc-card.crit { border-left-color:#E53935; }
+  .nc-card.maj  { border-left-color:#FF7043; }
+  .nc-card.mod  { border-left-color:#FFA726; }
+  .nc-card.min  { border-left-color:#FDD835; }
+  .nc-card.conf { border-left-color:#66BB6A; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:12px; color:#fff; margin-bottom:6px; }
+  .badge.crit { background:#E53935; }
+  .badge.maj  { background:#FF7043; }
+  .badge.mod  { background:#FFA726; }
+  .badge.min  { background:#FDD835; color:#1A1A1A; }
+  .badge.conf { background:#66BB6A; }
+  .nc-title { font-weight:700; font-size:14px; margin-bottom:3px; }
+  .nc-ref { font-size:12px; color:#888; }
+  .nc-del { position:absolute; top:10px; right:10px; background:none; border:none; color:#bbb; font-size:16px; cursor:pointer; }
+
+  /* ===== PLAN D'ACTIONS CORRECTIVES ===== */
+  .action-card { border-radius:8px; padding:12px 14px; margin-bottom:10px; }
+  .ab { display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; color:#fff; margin-bottom:6px; }
+  .a-imm { background:#FFF1EE; } .ab-imm { background:#8B1A1A; }
+  .a-u24 { background:#FFF6EC; } .ab-u24 { background:#E65100; }
+  .a-u48 { background:#FFF3E0; } .ab-u48 { background:#BF360C; }
+  .a-pla { background:#F1F3F4; } .ab-pla { background:#546E7A; }
+  .action-text { font-size:14px; font-weight:600; margin-bottom:3px; }
+  .action-ref { font-size:12px; color:#777; }
+
+  .thirty-box { background:#1A1A1A; color:#F0E4C0; border-radius:8px; padding:14px; text-align:center; font-weight:600; font-size:14px; margin:24px 0; border:1px solid #9C7F3D; }
+  .thirty-box input { background:transparent; border:none; color:#F0E4C0; font-weight:700; width:60px; text-align:center; border-bottom:1px solid #9C7F3D; }
+
+  /* ===== SIGNATURES ===== */
+  .sig-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px; }
+  .sig-box { border:1px solid #ddd; border-radius:8px; padding:14px; }
+  .sig-label { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .sig-name { font-size:13px; line-height:1.6; margin-bottom:10px; }
+  canvas.sigpad { width:100%; height:120px; border:1px dashed #9C7F3D; border-radius:6px; background:#fff; touch-action:none; }
+  .clear-btn { margin-top:6px; background:none; border:1px solid #9C7F3D; color:#9C7F3D; font-size:12px; font-weight:600; padding:6px 14px; border-radius:6px; width:100%; }
+  .sig-date { font-size:12px; color:#888; margin-top:8px; }
+
+  .legal { font-size:11px; color:#999; border-top:1px solid #eee; margin-top:30px; padding-top:14px; line-height:1.6; }
+
+  .print-note { font-size:12px; color:#666; background:#F8F8F8; border-left:3px solid #9C7F3D; border-radius:4px; padding:10px 12px; margin-top:10px; }
+  .qz-header .qz-summary .missing { color:#BF360C; }
+
+  @media print {
+    body { -webkit-print-color-adjust:exact; }
+    .clear-btn, .btn-gold, .btn-outline, .file-row, .obs-form, .nc-del, .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo"><span>V</span>erdict 360 AI</div>
+  <div class="tagline">INSPECTION MANUELLE · TERRAIN</div>
+  <h1>Rapport d'inspection en hygiène et salubrité alimentaire</h1>
+  <div class="ref">Réf. <input id="refInput" value="MAPAQ-2026-0822-001" style="background:transparent;border:none;color:#D4C28E;font-size:13px;text-align:center;width:200px;"></div>
+  <div id="saveIndicator" style="font-size:10px;color:#9C7F3D;letter-spacing:1px;margin-top:6px;">💾 Sauvegarde automatique activée</div>
+</div>
+
+<div class="body-content">
+
+  <!-- ===== IDENTIFICATION ===== -->
+  <div class="section-title">Identification de l'établissement</div>
+  <button class="btn-outline no-print" id="resetInspectionBtn" style="margin-bottom:14px;">🗑 Nouvelle inspection (efface tout)</button>
+  <div class="id-grid">
+    <div class="id-field"><label>Établissement</label><input type="text" id="fEtab" placeholder="Nom de l'établissement"></div>
+    <div class="id-field"><label>Adresse</label><input type="text" id="fAdresse" placeholder="Adresse complète"></div>
+    <div class="id-field"><label>Responsable sur place</label><input type="text" id="fResp" placeholder="Nom et titre"></div>
+    <div class="id-field"><label>Date d'inspection</label><input type="date" id="fDate"></div>
+  </div>
+
+  <!-- ===== QUESTIONNAIRE D'INSPECTION PAR ZONE ===== -->
+  <div class="section-title">Questionnaire d'inspection <span class="hint">touche pour répondre</span></div>
+  <div id="questionnaire"></div>
+
+  <!-- ===== TABLEAU DE BORD (SAISIE MANUELLE) ===== -->
+  <div class="section-title">Tableau de bord — Cote globale <span class="hint">saisie manuelle</span></div>
+  <div class="score-box">
+    <div class="pct-row">
+      <input type="number" id="globalPct" class="pct vert" min="0" max="100" value="100">
+      <span class="pct-sign">%</span>
+    </div>
+    <div class="label">CONFORMITÉ GLOBALE</div>
+    <div class="zone-grid" id="zoneGrid"></div>
+  </div>
+
+  <!-- ===== PHOTOS / OBSERVATIONS TERRAIN ===== -->
+  <div class="section-title">Photos à l'appui <span class="hint">optionnel</span></div>
+  <div id="photoBlocks"></div>
+  <button class="btn-gold no-print" id="addPhotoBlockBtn">+ Ajouter une photo</button>
+
+  <!-- ===== NON-CONFORMITÉS ===== -->
+  <div class="section-title">Non-conformités observées</div>
+  <div class="nc-summary" id="ncSummary"></div>
+  <div id="ncList"><div class="nc-empty">Aucune non-conformité ajoutée pour l'instant.</div></div>
+  <button class="btn-outline no-print" id="addNcManualBtn">+ Ajouter une non-conformité (sans photo)</button>
+
+  <!-- ===== PLAN D'ACTIONS CORRECTIVES ===== -->
+  <div class="section-title">Plan d'actions correctives</div>
+  <div id="pacImm"></div>
+  <div id="pacU24"></div>
+  <div id="pacU48"></div>
+  <div id="pacPla"></div>
+  <div id="pacEmpty" class="nc-empty">Le plan d'actions se remplit automatiquement à mesure que vous ajoutez des non-conformités.</div>
+
+  <div class="thirty-box">⏱ Suivi de conformité requis dans les <input type="number" id="delaiSuivi" value="15"> jours — Réinspection recommandée</div>
+
+  <!-- ===== SIGNATURES (2 BLOCS) ===== -->
+  <div class="section-title">Signatures</div>
+  <div class="sig-grid">
+    <div class="sig-box">
+      <div class="sig-label">Signature — Responsable de l'établissement</div>
+      <div class="sig-name">
+        Nom: <input type="text" style="border:none;border-bottom:1px solid #ccc;width:100%;font-size:13px;"><br><br>
+        Titre: <input type="text" style="border:none;border-bottom:1px solid #ccc;width:100%;font-size:13px;">
+      </div>
+      <canvas class="sigpad" id="sigClient"></canvas>
+      <button class="clear-btn no-print" onclick="clearSig('sigClient')">Effacer</button>
+      <div class="sig-date">Date: <input type="date" style="border:none;background:transparent;"></div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">Signature — Inspecteur</div>
+      <div class="sig-name">
+        Jacques Perrier<br>
+        Auditeur en hygiène et salubrité alimentaire<br>
+        Expert des normes MAPAQ et HACCP<br>
+        Verdict 360 AI
+      </div>
+      <canvas class="sigpad" id="sigInspecteur"></canvas>
+      <button class="clear-btn no-print" onclick="clearSig('sigInspecteur')">Effacer</button>
+      <div class="sig-date">Date: <input type="date" style="border:none;background:transparent;"></div>
+    </div>
+  </div>
+
+  <button class="btn-gold no-print" id="printBtn" onclick="doPrint()">🖨 Générer le PDF / Imprimer</button>
+  <div class="print-note no-print" id="printNote">Tu peux imprimer ou générer le PDF même s'il manque des réponses — les critères non répondus ne bloquent rien.</div>
+  <div class="print-note no-print" style="border-left-color:#546E7A;">
+    <strong>Le bouton n'ouvre rien?</strong> Ce fichier doit être ouvert dans <strong>Safari</strong> (ou Chrome), pas dans l'aperçu intégré d'une app — sinon le navigateur bloque l'impression.<br>
+    Solution manuelle sur iPhone : icône de partage <strong>⬆️</strong> en bas de Safari → <strong>Imprimer</strong> → pincer l'aperçu pour l'agrandir → <strong>Partager</strong> en haut à gauche → <strong>Enregistrer dans Fichiers</strong> pour obtenir un vrai PDF.
+  </div>
+
+  <div class="legal">
+    <strong>AVIS LÉGAL:</strong> Rapport rempli manuellement sur le terrain par l'inspecteur, sur la base d'une inspection visuelle directe. Ne constitue pas un rapport officiel MAPAQ. Toute inspection officielle doit être réalisée par un inspecteur accrédité du MAPAQ. © 2026 Verdict 360 AI — Tous droits réservés.
+  </div>
+
+</div>
+
+<script>
+/* ================= BANQUE DE NON-CONFORMITÉS (choix rapide) ================= */
+const NC_BANK = [
+  { label:"— Choisir une non-conformité —", crit:"", ref:"", risque:"", delai:"" },
+  { label:"Contact main-visage avec gant souillé", crit:"crit", ref:"Art. 26.1 Règlement sur les aliments", risque:"Risque élevé de contamination croisée", delai:"imm" },
+  { label:"Gant souillé en contact avec aliment prêt-à-servir", crit:"crit", ref:"Art. 26.1 Règlement sur les aliments", risque:"Risque élevé de contamination microbiologique", delai:"imm" },
+  { label:"Condensation active au-dessus d'une zone de préparation", crit:"crit", ref:"RACF art. 3.1.2", risque:"Risque de contamination croisée directe", delai:"imm" },
+  { label:"Présence de nuisibles (insectes, rongeurs)", crit:"crit", ref:"Art. 33 Règlement sur les aliments", risque:"Risque élevé de contamination", delai:"imm" },
+  { label:"Sanitaire non fonctionnel ou insalubre", crit:"crit", ref:"Art. 41 Règlement sur les aliments", risque:"Risque sanitaire élevé pour le personnel", delai:"imm" },
+  { label:"Linge non hygiénique en zone de préparation", crit:"maj", ref:"Art. 19 Règlement sur les aliments", risque:"Risque modéré de contamination de surfaces", delai:"u24" },
+  { label:"Déchets mal entreposés ou débordants", crit:"maj", ref:"Art. 31 Règlement sur les aliments", risque:"Risque d'attraction de nuisibles", delai:"u24" },
+  { label:"Denrées non protégées ou non couvertes", crit:"maj", ref:"Art. 20 Règlement sur les aliments", risque:"Risque de contamination", delai:"u24" },
+  { label:"Surface de travail sale ou non désinfectée", crit:"maj", ref:"Art. 19 Règlement sur les aliments", risque:"Risque de contamination croisée", delai:"u24" },
+  { label:"Résidus / traces de corrosion sur équipement", crit:"maj", ref:"Art. 19 Règlement sur les aliments", risque:"Risque de contamination modéré", delai:"u48" },
+  { label:"Thermomètre absent ou non fonctionnel", crit:"maj", ref:"Art. 15 Règlement sur les aliments", risque:"Risque de non-maîtrise des températures", delai:"u48" },
+  { label:"Murs, plafonds ou sols endommagés / désorganisés", crit:"maj", ref:"Art. 40 Règlement sur les aliments", risque:"Risque modéré, entretien requis", delai:"u48" },
+  { label:"Couvre-chef ou tenue non conforme", crit:"maj", ref:"Art. 27 Règlement sur les aliments", risque:"Risque de contamination physique", delai:"u48" },
+  { label:"Zone conforme — aucune non-conformité observée", crit:"conf", ref:"—", risque:"Aucune action requise", delai:"pla" },
+  { label:"Autre (personnalisé)", crit:"maj", ref:"", risque:"", delai:"u24" }
+];
+
+const DELAI_META = {
+  imm: { label:"🔴 IMMÉDIAT", cardClass:"a-imm", badgeClass:"ab-imm", container:"pacImm", jours:"immédiat" },
+  u24: { label:"🟠 URGENT 24h", cardClass:"a-u24", badgeClass:"ab-u24", container:"pacU24", jours:"24h" },
+  u48: { label:"🟤 URGENT 48h", cardClass:"a-u48", badgeClass:"ab-u48", container:"pacU48", jours:"48h" },
+  pla: { label:"📅 PLANIFIÉ 7j", cardClass:"a-pla", badgeClass:"ab-pla", container:"pacPla", jours:"7 jours" }
+};
+const CRIT_META = {
+  crit:{ label:"CRITIQUE", points:15 },
+  maj: { label:"MAJEURE",  points:7 },
+  mod: { label:"MODÉRÉE",  points:3 },
+  min: { label:"MINEURE",  points:1 },
+  conf:{ label:"CONFORME", points:0 }
+};
+
+/* ================= 6 CHAPITRES D'INSPECTION (approfondi, ~12 critères chacun) ================= */
+function tempQ(id, label, target, evalFn, ref, risque) {
+  return { id:id, label:label, type:'temp', target:target, evalFn:evalFn, ref:ref, risque:risque };
+}
+function confQ(id, label, ref, risque) {
+  return { id:id, label:label, type:'conf', ref:ref, risque:risque };
+}
+// Seuils à 5 paliers : conforme / mineure / modérée / majeure / critique
+function evalFridge(v) { if (v<=4) return 'conf'; if (v<=5) return 'min'; if (v<=6) return 'mod'; if (v<=8) return 'maj'; return 'crit'; }
+function evalFreezer(v) { if (v<=-18) return 'conf'; if (v<=-16) return 'min'; if (v<=-14) return 'mod'; if (v<=-10) return 'maj'; return 'crit'; }
+function evalHotHold(v) { if (v>=60) return 'conf'; if (v>=55) return 'min'; if (v>=50) return 'mod'; if (v>=45) return 'maj'; return 'crit'; }
+
+const CHAPTERS = [
+  { key:'reception', name:'Réception', icon:'🚚', criteria:[
+    confQ('camion','Camion de livraison propre et fermé','Art. 22 Règlement sur les aliments','Risque de contamination durant le transport'),
+    confQ('emballages','Emballages intacts, non endommagés','Art. 20 Règlement sur les aliments','Risque de contamination des denrées'),
+    tempQ('trecep','Température de réception (produits réfrigérés)','Cible ≤ 4°C', evalFridge, 'Art. 15 Règlement sur les aliments','Risque de rupture de la chaîne de froid'),
+    tempQ('trecgel','Température de réception (produits congelés)','Cible ≤ -18°C', evalFreezer, 'Art. 15 Règlement sur les aliments','Risque de rupture de la chaîne de froid'),
+    confQ('dates','Dates de péremption vérifiées à la réception','Art. 23 Règlement sur les aliments','Risque de vente de denrées périmées'),
+    confQ('decongel','Absence de signes de décongélation/recongélation','Art. 15 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    confQ('etiquetage','Étiquetage des produits conforme (fournisseur, lot)','Art. 24 Règlement sur les aliments','Risque de perte de traçabilité'),
+    confQ('livreur','Livreur avec tenue et hygiène adéquates','Art. 27 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('sol','Denrées non entreposées au sol lors du déchargement','Art. 20 Règlement sur les aliments','Risque de contamination'),
+    confQ('fifo','Rotation FIFO appliquée dès la réception','Art. 23 Règlement sur les aliments','Risque de péremption non détectée'),
+    confQ('documents','Documents de livraison (bons, certificats) disponibles','Art. 24 Règlement sur les aliments','Risque de perte de traçabilité'),
+    confQ('nuisiblesrecep','Absence de nuisibles sur ou dans les livraisons','Art. 33 Règlement sur les aliments','Risque élevé de contamination')
+  ]},
+  { key:'froid', name:'Chaîne du froid', icon:'🌡️', criteria:[
+    tempQ('frigo1','Température du réfrigérateur principal','Cible ≤ 4°C', evalFridge, 'Art. 15 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    tempQ('frigo2','Température du réfrigérateur secondaire','Cible ≤ 4°C', evalFridge, 'Art. 15 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    tempQ('congel','Température du congélateur','Cible ≤ -18°C', evalFreezer, 'Art. 15 Règlement sur les aliments','Risque de rupture de la chaîne de froid'),
+    tempQ('maintien','Température de maintien au chaud','Cible ≥ 60°C', evalHotHold, 'Art. 16 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    confQ('thermo','Thermomètres calibrés et fonctionnels','Art. 15 Règlement sur les aliments','Risque de non-maîtrise des températures'),
+    confQ('registres','Registres de températures tenus à jour','Art. 44 Règlement sur les aliments','Risque de perte de traçabilité'),
+    confQ('portes','Portes des chambres froides bien fermées','Art. 15 Règlement sur les aliments','Risque de hausse de température'),
+    confQ('surcharge','Absence de surcharge empêchant la circulation d\'air','Art. 15 Règlement sur les aliments','Risque de refroidissement inégal'),
+    confQ('refroid','Refroidissement rapide des aliments cuits respecté','Art. 17 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    confQ('decongelmethode','Décongélation effectuée selon méthode sécuritaire','Art. 17 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    confQ('alarme','Alarme de température fonctionnelle','Art. 15 Règlement sur les aliments','Risque de non-détection d\'une panne'),
+    confQ('ruptures','Aucune rupture de chaîne de froid observée','Art. 15 Règlement sur les aliments','Risque de prolifération bactérienne')
+  ]},
+  { key:'prep', name:'Préparation', icon:'🔪', criteria:[
+    confQ('separation','Séparation cru/cuit respectée sur les surfaces','Art. 21 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('planches','Planches à découper propres et dédiées','Art. 19 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('ustensiles','Ustensiles et équipements propres avant usage','Art. 19 Règlement sur les aliments','Risque de contamination'),
+    confQ('lavagefl','Lavage des fruits et légumes avant préparation','Art. 21 Règlement sur les aliments','Risque de contamination microbiologique'),
+    confQ('contamcroisee','Aucune contamination croisée observée','Art. 21 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('allergenes','Manipulation des allergènes contrôlée','Art. 25 Règlement sur les aliments','Risque de réaction allergique'),
+    confQ('degustation','Dégustation effectuée avec ustensile propre','Art. 26 Règlement sur les aliments','Risque de contamination'),
+    confQ('datage','Aliments préparés à l\'avance correctement identifiés et datés','Art. 23 Règlement sur les aliments','Risque de péremption non détectée'),
+    confQ('tempsambiant','Temps hors réfrigération respecté (moins de 2h)','Art. 17 Règlement sur les aliments','Risque de prolifération bactérienne'),
+    confQ('recettes','Recettes standardisées suivies','Art. 44 Règlement sur les aliments','Risque de non-conformité récurrente'),
+    confQ('gants','Gants changés entre tâches différentes','Art. 26.1 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('zonedegagee','Zone de préparation dégagée et organisée','Art. 19 Règlement sur les aliments','Risque d\'erreur de manipulation')
+  ]},
+  { key:'nettoyage', name:'Nettoyage', icon:'🧽', criteria:[
+    confQ('plannettoyage','Plan de nettoyage affiché et suivi','Art. 44 Règlement sur les aliments','Risque de nettoyage incomplet'),
+    confQ('produitschim','Produits de nettoyage entreposés séparément des aliments','Art. 34 Règlement sur les aliments','Risque de contamination chimique'),
+    confQ('surfacesdesinf','Surfaces désinfectées après chaque usage','Art. 19 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('hottes','Fréquence de nettoyage des hottes respectée','Art. 40 Règlement sur les aliments','Risque d\'incendie et d\'accumulation de graisse'),
+    confQ('lavevaisselle','Lave-vaisselle atteint la température de désinfection','Art. 19 Règlement sur les aliments','Risque de vaisselle non désinfectée'),
+    confQ('vaisselle','Vaisselle et ustensiles rangés propres et secs','Art. 19 Règlement sur les aliments','Risque de contamination'),
+    confQ('poubelles','Poubelles propres et couvertes','Art. 31 Règlement sur les aliments','Risque d\'attraction de nuisibles'),
+    confQ('linges','Linges et guenilles changés fréquemment','Art. 19 Règlement sur les aliments','Risque de contamination de surfaces'),
+    confQ('solspropres','Sols nettoyés sans accumulation de résidus','Art. 40 Règlement sur les aliments','Risque d\'accumulation de saletés'),
+    confQ('ventilation','Évents et grilles de ventilation propres','Art. 40 Règlement sur les aliments','Risque de contamination par l\'air'),
+    confQ('registrenettoyage','Registre de nettoyage complété','Art. 44 Règlement sur les aliments','Risque de perte de traçabilité'),
+    confQ('odeurs','Absence d\'odeurs suspectes dans la cuisine','Art. 19 Règlement sur les aliments','Risque de contamination non détectée')
+  ]},
+  { key:'personnel', name:'Personnel', icon:'🧤', criteria:[
+    confQ('lavagemains','Lavage des mains adéquat et fréquent','Art. 26 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('affiches','Affiches de lavage des mains présentes','Art. 26 Règlement sur les aliments','Risque de rappel insuffisant des bonnes pratiques'),
+    confQ('couvrechef','Port du couvre-chef conforme','Art. 27 Règlement sur les aliments','Risque de contamination physique'),
+    confQ('bijoux','Bijoux et vernis à ongles absents','Art. 27 Règlement sur les aliments','Risque de contamination physique'),
+    confQ('tenuepropre','Tenue de travail propre','Art. 27 Règlement sur les aliments','Risque de contamination'),
+    confQ('maladie','Aucun signe de maladie ou d\'infection chez le personnel','Art. 28 Règlement sur les aliments','Risque de contamination biologique'),
+    confQ('blessures','Blessures couvertes adéquatement','Art. 28 Règlement sur les aliments','Risque de contamination'),
+    confQ('formation','Formation MAPAQ à jour pour le personnel clé','Art. 44 Règlement sur les aliments','Risque de non-conformité récurrente'),
+    confQ('mangerboire','Interdiction de manger, boire ou fumer en zone de préparation respectée','Art. 27 Règlement sur les aliments','Risque de contamination'),
+    confQ('gantsperso','Gants utilisés correctement (pas comme substitut au lavage des mains)','Art. 26.1 Règlement sur les aliments','Risque de contamination croisée'),
+    confQ('personnelmalade','Personnel malade retiré des tâches à risque','Art. 28 Règlement sur les aliments','Risque de contamination biologique'),
+    confQ('comportements','Comportements hygiéniques généraux respectés','Art. 26 Règlement sur les aliments','Risque de contamination')
+  ]},
+  { key:'locaux', name:'Locaux', icon:'🏗️', criteria:[
+    confQ('mursols','Murs, plafonds et sols en bon état','Art. 40 Règlement sur les aliments','Risque modéré, entretien requis'),
+    confQ('eclairage','Éclairage adéquat et protégé','Art. 40 Règlement sur les aliments','Risque de contamination par bris de lampe'),
+    confQ('ventilationlocaux','Ventilation fonctionnelle','Art. 40 Règlement sur les aliments','Risque de condensation et de moisissures'),
+    confQ('nuisibleslocaux','Aucun signe de nuisibles (souris, insectes)','Art. 33 Règlement sur les aliments','Risque élevé de contamination'),
+    confQ('dechets','Système de gestion des déchets adéquat','Art. 31 Règlement sur les aliments','Risque d\'attraction de nuisibles'),
+    confQ('portesfenetres','Portes et fenêtres bien scellées','Art. 33 Règlement sur les aliments','Risque d\'intrusion de nuisibles'),
+    confQ('sanitaires','Sanitaires propres et fonctionnels','Art. 41 Règlement sur les aliments','Risque sanitaire pour le personnel'),
+    confQ('eauchaude','Eau chaude et froide disponible aux postes de lavage','Art. 26 Règlement sur les aliments','Risque de lavage des mains inadéquat'),
+    confQ('entreposagechim','Entreposage des produits chimiques sécurisé','Art. 34 Règlement sur les aliments','Risque de contamination chimique'),
+    confQ('acces','Accès extérieur sécurisé contre les nuisibles','Art. 33 Règlement sur les aliments','Risque d\'intrusion de nuisibles'),
+    confQ('equipements','Équipements en bon état de fonctionnement','Art. 40 Règlement sur les aliments','Risque de panne affectant la salubrité'),
+    confQ('espace','Espace de travail suffisant et non encombré','Art. 19 Règlement sur les aliments','Risque d\'erreur de manipulation')
+  ]}
+];
+
+let ncCounter = 0;
+let photoBlockCounter = 0;
+
+/* ================= SCORE — couleur automatique + calcul auto depuis les réponses ================= */
+const chapterScoreDirty = {}; // qid -> true si l'utilisateur a modifié manuellement le score du chapitre
+let globalScoreDirty = false;
+
+function pctClass(v) {
+  v = parseFloat(v);
+  if (isNaN(v)) return 'v';
+  if (v >= 70) return 'v';
+  if (v >= 40) return 'j';
+  return 'r';
+}
+function pctFullClass(short) { return short === 'v' ? 'vert' : (short === 'j' ? 'jaune' : 'rouge'); }
+
+function applyPctColor(el, shortClassPrefix) {
+  // shortClassPrefix: 'v'/'j'/'r' pour .zscore, ou classe complète 'vert'/'jaune'/'rouge' pour .pct
+  const isGlobal = el.id === 'globalPct';
+  el.classList.remove('v','j','r','vert','jaune','rouge');
+  if (isGlobal) el.classList.add(pctFullClass(pctClass(el.value)));
+  else el.classList.add(pctClass(el.value));
+}
+
+document.getElementById('globalPct').addEventListener('input', function() {
+  globalScoreDirty = true;
+  applyPctColor(this);
+  saveState();
+});
+
+function computeChapterDeduction(chKey) {
+  let points = 0;
+  Object.keys(questionnaireState).forEach(function(qid) {
+    if (qid.indexOf(chKey + '_') === 0) {
+      const sev = questionnaireState[qid];
+      if (CRIT_META[sev]) points += CRIT_META[sev].points;
+    }
+  });
+  return points;
+}
+
+function refreshChapterScore(chKey) {
+  const input = document.querySelector('.zscore[data-zone="' + chKey + '"]');
+  if (!input) return;
+  if (!chapterScoreDirty[chKey]) {
+    const deduction = computeChapterDeduction(chKey);
+    const score = Math.max(0, 100 - deduction);
+    input.value = score;
+    applyPctColor(input);
+  }
+  refreshGlobalScore();
+}
+
+function refreshGlobalScore() {
+  if (globalScoreDirty) return;
+  const inputs = document.querySelectorAll('.zscore');
+  if (inputs.length === 0) return;
+  let sum = 0;
+  inputs.forEach(function(el) { sum += parseFloat(el.value) || 0; });
+  const avg = Math.round(sum / inputs.length);
+  const globalEl = document.getElementById('globalPct');
+  globalEl.value = avg;
+  applyPctColor(globalEl);
+}
+
+/* ================= TABLEAU DE BORD — génération des 6 cellules de chapitre ================= */
+(function buildZoneGrid() {
+  const grid = document.getElementById('zoneGrid');
+  CHAPTERS.forEach(function(ch) {
+    const cell = document.createElement('div');
+    cell.className = 'zone-cell';
+    cell.innerHTML = '<div class="zname">' + ch.name.toUpperCase() + '</div><input type="number" class="zscore v" data-zone="' + ch.key + '" min="0" max="100" value="100">';
+    grid.appendChild(cell);
+  });
+  grid.querySelectorAll('.zscore').forEach(function(el) {
+    el.addEventListener('input', function() {
+      chapterScoreDirty[this.getAttribute('data-zone')] = true;
+      applyPctColor(this);
+      refreshGlobalScore();
+      saveState();
+    });
+  });
+})();
+
+
+
+/* ================= AJOUT D'UN BLOC PHOTO ================= */
+document.getElementById('addPhotoBlockBtn').addEventListener('click', addPhotoBlock);
+
+function buildChapterSelectOptions() {
+  return CHAPTERS.map(function(ch) { return '<option value="' + ch.key + '">' + ch.icon + ' ' + ch.name + '</option>'; }).join('');
+}
+function chapterName(key) {
+  const ch = CHAPTERS.find(function(c) { return c.key === key; });
+  return ch ? ch.name : key;
+}
+
+function addPhotoBlock() {
+  photoBlockCounter++;
+  const id = 'pb' + photoBlockCounter;
+  const wrap = document.createElement('div');
+  wrap.className = 'photo-block';
+  wrap.id = id;
+  wrap.innerHTML =
+    '<div class="photo-block-header">' +
+      '<select class="zoneSelect">' + buildChapterSelectOptions() + '</select>' +
+      '<button class="btn-small no-print" onclick="document.getElementById(\'' + id + '\').remove()">Retirer</button>' +
+    '</div>' +
+    '<div class="file-row no-print"><input type="file" accept="image/*" capture="environment" class="fileInput"></div>' +
+    '<div class="photo-wrap"><img alt="Photo terrain"></div>' +
+    '<div class="photo-hint no-print" style="display:none;">Touchez la photo à l\'endroit d\'une non-conformité pour poser un repère.</div>' +
+    '<div class="photo-caption"></div>' +
+    '<div class="obsFormHolder"></div>';
+  document.getElementById('photoBlocks').appendChild(wrap);
+
+  const fileInput = wrap.querySelector('.fileInput');
+  const photoWrap = wrap.querySelector('.photo-wrap');
+  const img = wrap.querySelector('img');
+  const hint = wrap.querySelector('.photo-hint');
+
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      img.src = ev.target.result;
+      photoWrap.style.display = 'block';
+      hint.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  let markerCount = 0;
+  photoWrap.addEventListener('click', function(e) {
+    if (!img.src) return;
+    const rect = photoWrap.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    markerCount++;
+    const marker = document.createElement('div');
+    marker.className = 'marker';
+    marker.style.top = y + '%';
+    marker.style.left = x + '%';
+    marker.textContent = markerCount;
+    photoWrap.appendChild(marker);
+    openObsForm(wrap, markerCount);
+  });
+}
+addPhotoBlock(); // premier bloc par défaut
+
+/* ================= FORMULAIRE D'OBSERVATION (clic + choix) ================= */
+function buildNcSelectOptions() {
+  return NC_BANK.map(function(item, idx) {
+    return '<option value="' + idx + '">' + item.label + '</option>';
+  }).join('');
+}
+
+function openObsForm(photoBlockEl, markerNum) {
+  const holder = photoBlockEl.querySelector('.obsFormHolder');
+  holder.innerHTML = '';
+  const form = document.createElement('div');
+  form.className = 'obs-form no-print';
+  form.innerHTML =
+    '<div><span class="marker-tag">' + markerNum + '</span><strong>Observation liée au repère ' + markerNum + '</strong></div>' +
+    '<label>Non-conformité (choisir ou personnaliser)</label>' +
+    '<select class="ncSelect">' + buildNcSelectOptions() + '</select>' +
+    '<div class="row2">' +
+      '<div><label>Criticité</label><select class="critSelect"><option value="crit">Critique</option><option value="maj">Majeure</option><option value="mod">Modérée</option><option value="min">Mineure</option><option value="conf">Conforme</option></select></div>' +
+      '<div><label>Délai d\'intervention</label><select class="delaiSelect"><option value="imm">Immédiat</option><option value="u24">Urgent 24h</option><option value="u48">Urgent 48h</option><option value="pla">Planifié 7j</option></select></div>' +
+    '</div>' +
+    '<label>Titre de la non-conformité</label>' +
+    '<input type="text" class="titreInput" placeholder="Ex: Gant souillé en contact avec aliment">' +
+    '<label>Référence réglementaire</label>' +
+    '<input type="text" class="refInputNc" placeholder="Ex: Art. 26.1 Règlement sur les aliments">' +
+    '<label>Risque associé</label>' +
+    '<input type="text" class="risqueInput" placeholder="Ex: Risque de contamination croisée">' +
+    '<label>Action corrective requise</label>' +
+    '<textarea class="actionInput" placeholder="Ex: Retrait immédiat et remplacement du gant"></textarea>' +
+    '<div class="obs-actions">' +
+      '<button class="btn-cancel" type="button">Annuler</button>' +
+      '<button class="btn-gold" type="button" style="margin-top:0;">Ajouter</button>' +
+    '</div>';
+  holder.appendChild(form);
+
+  const ncSelect = form.querySelector('.ncSelect');
+  const critSelect = form.querySelector('.critSelect');
+  const delaiSelect = form.querySelector('.delaiSelect');
+  const titreInput = form.querySelector('.titreInput');
+  const refInputNc = form.querySelector('.refInputNc');
+  const risqueInput = form.querySelector('.risqueInput');
+  const actionInput = form.querySelector('.actionInput');
+
+  ncSelect.addEventListener('change', function() {
+    const item = NC_BANK[parseInt(this.value)];
+    if (!item || !item.crit) return;
+    critSelect.value = item.crit;
+    delaiSelect.value = item.delai;
+    titreInput.value = item.label.startsWith('Autre') ? '' : item.label;
+    refInputNc.value = item.ref;
+    risqueInput.value = item.risque;
+    actionInput.value = '';
+  });
+
+  form.querySelector('.btn-cancel').addEventListener('click', function() { holder.innerHTML = ''; });
+
+  form.querySelector('.btn-gold').addEventListener('click', function() {
+    const titre = titreInput.value.trim() || 'Non-conformité sans titre';
+    const crit = critSelect.value;
+    const delai = delaiSelect.value;
+    const ref = refInputNc.value.trim();
+    const risque = risqueInput.value.trim();
+    const action = actionInput.value.trim();
+    const zone = photoBlockEl.querySelector('.zoneSelect').value;
+
+    addNcCard(titre, crit, chapterName(zone) + ' (repère ' + markerNum + ') · ' + (ref || '—') + (risque ? ' · ' + risque : ''));
+    if (crit !== 'conf') {
+      addPacCard(titre, delai, ref, action || 'Corriger la non-conformité identifiée.');
+    }
+    const captionEl = photoBlockEl.querySelector('.photo-caption');
+    captionEl.innerHTML += (captionEl.innerHTML ? ' ' : '') + '<b>' + markerNum + ':</b> ' + titre + '. ';
+    holder.innerHTML = '';
+  });
+}
+
+/* ================= AJOUT NC MANUELLE (sans photo) ================= */
+document.getElementById('addNcManualBtn').addEventListener('click', function() {
+  const holder = document.createElement('div');
+  holder.className = 'obs-form no-print';
+  holder.innerHTML =
+    '<strong>Nouvelle non-conformité (sans photo)</strong>' +
+    '<label>Chapitre</label>' +
+    '<select class="zoneSelectManual">' + buildChapterSelectOptions() + '</select>' +
+    '<label>Non-conformité (choisir ou personnaliser)</label>' +
+    '<select class="ncSelect">' + buildNcSelectOptions() + '</select>' +
+    '<div class="row2">' +
+      '<div><label>Criticité</label><select class="critSelect"><option value="crit">Critique</option><option value="maj">Majeure</option><option value="mod">Modérée</option><option value="min">Mineure</option><option value="conf">Conforme</option></select></div>' +
+      '<div><label>Délai d\'intervention</label><select class="delaiSelect"><option value="imm">Immédiat</option><option value="u24">Urgent 24h</option><option value="u48">Urgent 48h</option><option value="pla">Planifié 7j</option></select></div>' +
+    '</div>' +
+    '<label>Titre de la non-conformité</label>' +
+    '<input type="text" class="titreInput" placeholder="Ex: Denrées non protégées">' +
+    '<label>Référence réglementaire</label>' +
+    '<input type="text" class="refInputNc" placeholder="Ex: Art. 20 Règlement sur les aliments">' +
+    '<label>Risque associé</label>' +
+    '<input type="text" class="risqueInput" placeholder="Ex: Risque de contamination">' +
+    '<label>Action corrective requise</label>' +
+    '<textarea class="actionInput" placeholder="Ex: Couvrir immédiatement les denrées"></textarea>' +
+    '<div class="obs-actions">' +
+      '<button class="btn-cancel" type="button">Annuler</button>' +
+      '<button class="btn-gold" type="button" style="margin-top:0;">Ajouter</button>' +
+    '</div>';
+  this.parentNode.insertBefore(holder, this);
+
+  const ncSelect = holder.querySelector('.ncSelect');
+  const critSelect = holder.querySelector('.critSelect');
+  const delaiSelect = holder.querySelector('.delaiSelect');
+  const titreInput = holder.querySelector('.titreInput');
+  const refInputNc = holder.querySelector('.refInputNc');
+  const risqueInput = holder.querySelector('.risqueInput');
+  const actionInput = holder.querySelector('.actionInput');
+  const zoneSelectManual = holder.querySelector('.zoneSelectManual');
+
+  ncSelect.addEventListener('change', function() {
+    const item = NC_BANK[parseInt(this.value)];
+    if (!item || !item.crit) return;
+    critSelect.value = item.crit;
+    delaiSelect.value = item.delai;
+    titreInput.value = item.label.startsWith('Autre') ? '' : item.label;
+    refInputNc.value = item.ref;
+    risqueInput.value = item.risque;
+    actionInput.value = '';
+  });
+
+  holder.querySelector('.btn-cancel').addEventListener('click', function() { holder.remove(); });
+
+  holder.querySelector('.btn-gold').addEventListener('click', function() {
+    const titre = titreInput.value.trim() || 'Non-conformité sans titre';
+    const crit = critSelect.value;
+    const delai = delaiSelect.value;
+    const ref = refInputNc.value.trim();
+    const risque = risqueInput.value.trim();
+    const action = actionInput.value.trim();
+    const zone = zoneSelectManual.value;
+
+    addNcCard(titre, crit, chapterName(zone) + ' · ' + (ref || '—') + (risque ? ' · ' + risque : ''));
+    if (crit !== 'conf') {
+      addPacCard(titre, delai, ref, action || 'Corriger la non-conformité identifiée.');
+    }
+    holder.remove();
+  });
+});
+
+/* ================= CRÉATION DES CARTES NC ET PAC ================= */
+function addNcCard(titre, crit, refText, qid) {
+  const list = document.getElementById('ncList');
+  const empty = list.querySelector('.nc-empty');
+  if (empty) empty.remove();
+
+  ncCounter++;
+  const num = String(ncCounter).padStart(2, '0');
+  const card = document.createElement('div');
+  card.className = 'nc-card ' + crit;
+  if (qid) card.setAttribute('data-qid', qid);
+  card.innerHTML =
+    '<button class="nc-del no-print" title="Retirer">✕</button>' +
+    '<span class="badge ' + crit + '">' + CRIT_META[crit].label + '</span>' +
+    '<div class="nc-title">NC-' + num + ' — ' + titre + '</div>' +
+    '<div class="nc-ref">' + refText + '</div>';
+  card.querySelector('.nc-del').addEventListener('click', function() {
+    card.remove();
+    if (qid) resetPillForQid(qid);
+    if (!document.getElementById('ncList').querySelector('.nc-card')) {
+      document.getElementById('ncList').innerHTML = '<div class="nc-empty">Aucune non-conformité ajoutée pour l\'instant.</div>';
+    }
+    updateNcSummary();
+  });
+  list.appendChild(card);
+  updateNcSummary();
+}
+
+function addPacCard(titre, delai, ref, action, qid) {
+  const meta = DELAI_META[delai];
+  const empty = document.getElementById('pacEmpty');
+  if (empty) empty.style.display = 'none';
+  const card = document.createElement('div');
+  card.className = 'action-card ' + meta.cardClass;
+  if (qid) card.setAttribute('data-qid', qid);
+  card.innerHTML =
+    '<span class="ab ' + meta.badgeClass + '">' + meta.label + '</span>' +
+    '<div class="action-text">' + titre + ' · ' + action + '</div>' +
+    '<div class="action-ref">' + (ref || '—') + ' · Délai: ' + meta.jours + '</div>';
+  document.getElementById(meta.container === 'pacPla' ? 'pacPla' : meta.container).appendChild(card);
+}
+
+function removeCardsForQid(qid) {
+  document.querySelectorAll('.nc-card[data-qid="' + qid + '"], .action-card[data-qid="' + qid + '"]').forEach(function(el) { el.remove(); });
+  if (!document.getElementById('ncList').querySelector('.nc-card')) {
+    document.getElementById('ncList').innerHTML = '<div class="nc-empty">Aucune non-conformité ajoutée pour l\'instant.</div>';
+  }
+  updateNcSummary();
+}
+
+function updateNcSummary() {
+  const counts = { crit:0, maj:0, mod:0, min:0 };
+  let points = 0;
+  document.querySelectorAll('#ncList .nc-card').forEach(function(card) {
+    ['crit','maj','mod','min'].forEach(function(sev) {
+      if (card.classList.contains(sev)) {
+        counts[sev]++;
+        points += CRIT_META[sev].points;
+      }
+    });
+  });
+  const holder = document.getElementById('ncSummary');
+  const total = counts.crit + counts.maj + counts.mod + counts.min;
+  if (total === 0) { holder.innerHTML = ''; return; }
+  holder.innerHTML =
+    (counts.crit ? '<span class="chip crit">' + counts.crit + ' Critique(s)</span>' : '') +
+    (counts.maj ? '<span class="chip maj">' + counts.maj + ' Majeure(s)</span>' : '') +
+    (counts.mod ? '<span class="chip mod">' + counts.mod + ' Modérée(s)</span>' : '') +
+    (counts.min ? '<span class="chip min">' + counts.min + ' Mineure(s)</span>' : '') +
+    '<span class="chip pts">' + points + ' point(s) de déduction</span>';
+}
+
+function resetPillForQid(qid) {
+  const item = document.querySelector('.qitem[data-qid="' + qid + '"]');
+  if (!item) return;
+  item.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('active'); });
+  item.querySelectorAll('.pill-alt').forEach(function(p) { p.classList.remove('active'); });
+  delete questionnaireState[qid];
+  delete tempAnswerValues[qid];
+  const chKey = qid.substring(0, qid.indexOf('_'));
+  updateZoneSummary(chKey);
+  updateGlobalProgress();
+  refreshChapterScore(chKey);
+  saveState();
+}
+
+/* ================= QUESTIONNAIRE D'INSPECTION PAR CHAPITRE ================= */
+const questionnaireState = {}; // qid -> severity ('conf'|'maj'|'crit'|'min'|'mod'|'na'|'nv')
+const tempAnswerValues = {}; // qid -> valeur numérique saisie pour les critères de type température
+
+function defaultDelai(sev) {
+  if (sev === 'crit') return 'imm';
+  if (sev === 'maj') return 'u24';
+  if (sev === 'mod') return 'u48';
+  return 'pla'; // mineure
+}
+
+function buildQuestionnaire() {
+  const holder = document.getElementById('questionnaire');
+  CHAPTERS.forEach(function(ch, chIdx) {
+    const block = document.createElement('div');
+    block.className = 'qz-block' + (chIdx === 0 ? ' open' : '');
+    block.id = 'qz_' + ch.key;
+
+    let bodyHtml = '';
+    ch.criteria.forEach(function(q) {
+      const qid = ch.key + '_' + q.id;
+      if (q.type === 'temp') {
+        bodyHtml +=
+          '<div class="qitem" data-qid="' + qid + '">' +
+            '<div class="qitem-label">' + q.label + ' <span class="temp-target">(' + q.target + ')</span></div>' +
+            '<div class="temp-row">' +
+              '<input type="number" step="0.1" class="tempInput" data-qid="' + qid + '">' +
+              '<span class="temp-result wait" data-role="result">En attente</span>' +
+            '</div>' +
+            '<div class="pill-row-alt">' +
+              '<div class="pill-alt" data-sev="na" title="Non applicable">N/A</div>' +
+              '<div class="pill-alt" data-sev="nv" title="Non vérifiable">Non vérifiable</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        bodyHtml +=
+          '<div class="qitem" data-qid="' + qid + '">' +
+            '<div class="qitem-label">' + q.label + '</div>' +
+            '<div class="pill-row">' +
+              '<div class="pill" data-sev="conf" title="Conforme">Conf.</div>' +
+              '<div class="pill" data-sev="min" title="Mineure">Min.</div>' +
+              '<div class="pill" data-sev="mod" title="Modérée">Mod.</div>' +
+              '<div class="pill" data-sev="maj" title="Majeure">Maj.</div>' +
+              '<div class="pill" data-sev="crit" title="Critique">Crit.</div>' +
+            '</div>' +
+            '<div class="pill-row-alt">' +
+              '<div class="pill-alt" data-sev="na" title="Non applicable">N/A</div>' +
+              '<div class="pill-alt" data-sev="nv" title="Non vérifiable">Non vérifiable</div>' +
+            '</div>' +
+          '</div>';
+      }
+    });
+
+    block.innerHTML =
+      '<div class="qz-header">' +
+        '<div><div class="qz-title">' + ch.icon + ' ' + ch.name + '</div><div class="qz-summary" data-role="summary">0 / ' + ch.criteria.length + ' critère(s) répondu(s)</div></div>' +
+        '<div class="qz-caret">▶</div>' +
+      '</div>' +
+      '<div class="qz-body">' + bodyHtml + '</div>';
+    holder.appendChild(block);
+
+    block.querySelector('.qz-header').addEventListener('click', function() {
+      block.classList.toggle('open');
+    });
+
+    // Brancher les pills principales (conforme → critique)
+    block.querySelectorAll('.qitem').forEach(function(item) {
+      const qid = item.getAttribute('data-qid');
+      const pills = item.querySelectorAll('.pill');
+      const altPills = item.querySelectorAll('.pill-alt');
+      pills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+          const sev = pill.getAttribute('data-sev');
+          applyAnswerUI(ch.key, item, qid, sev);
+        });
+      });
+      // Brancher N/A et Non vérifiable (disponibles pour tous les types de critères)
+      altPills.forEach(function(altPill) {
+        altPill.addEventListener('click', function() {
+          const sev = altPill.getAttribute('data-sev');
+          applyAnswerUI(ch.key, item, qid, sev);
+        });
+      });
+    });
+
+    // Brancher les champs température
+    block.querySelectorAll('.tempInput').forEach(function(input) {
+      input.addEventListener('input', function() {
+        const qid = this.getAttribute('data-qid');
+        const item = this.closest('.qitem');
+        item.querySelectorAll('.pill-alt').forEach(function(p) { p.classList.remove('active'); });
+        const v = parseFloat(this.value);
+        if (isNaN(v)) {
+          const resultEl = item.querySelector('[data-role="result"]');
+          resultEl.className = 'temp-result wait';
+          resultEl.textContent = 'En attente';
+          return;
+        }
+        const qDef = findQuestionDef(qid);
+        const sev = qDef.evalFn(v);
+        applyAnswerUI(ch.key, item, qid, sev, v, true);
+      });
+    });
+  });
+  updateGlobalProgress();
+}
+
+/* Applique visuellement une réponse (pills + champ température) puis enregistre l'état.
+   skipTempInputUpdate: true quand appelé depuis l'input température lui-même (pour ne pas écraser ce que l'utilisateur tape) */
+function applyAnswerUI(chKey, item, qid, sev, tempValue, skipTempInputUpdate) {
+  const pills = item.querySelectorAll('.pill');
+  const altPills = item.querySelectorAll('.pill-alt');
+  pills.forEach(function(p) { p.classList.remove('active'); });
+  altPills.forEach(function(p) { p.classList.remove('active'); });
+  if (sev === 'na' || sev === 'nv') {
+    altPills.forEach(function(p) { if (p.getAttribute('data-sev') === sev) p.classList.add('active'); });
+  } else {
+    pills.forEach(function(p) { if (p.getAttribute('data-sev') === sev) p.classList.add('active'); });
+  }
+  const resultEl = item.querySelector('[data-role="result"]');
+  const tempInput = item.querySelector('.tempInput');
+  if (resultEl) {
+    if (sev === 'na') { resultEl.className = 'temp-result wait'; resultEl.textContent = 'N/A'; }
+    else if (sev === 'nv') { resultEl.className = 'temp-result wait'; resultEl.textContent = 'Non vérifiable'; }
+    else if (tempInput) { resultEl.className = 'temp-result ' + sev; resultEl.textContent = CRIT_META[sev].label + ' · ' + tempValue + '°C'; }
+  }
+  if (tempInput && !skipTempInputUpdate) {
+    tempInput.value = (sev === 'na' || sev === 'nv') ? '' : (tempValue !== undefined ? tempValue : tempInput.value);
+  }
+  handleQuestionAnswer(chKey, item, qid, sev, tempValue);
+}
+
+function findQuestionDef(qid) {
+  const chKey = qid.substring(0, qid.indexOf('_'));
+  const qShortId = qid.substring(qid.indexOf('_') + 1);
+  const ch = CHAPTERS.find(function(c) { return c.key === chKey; });
+  if (!ch) return null;
+  return ch.criteria.find(function(q) { return q.id === qShortId; }) || null;
+}
+
+function handleQuestionAnswer(chKey, itemEl, qid, sev, tempValue) {
+  const qDef = findQuestionDef(qid);
+  removeCardsForQid(qid);
+  questionnaireState[qid] = sev;
+  if (tempValue !== undefined && tempValue !== null && !isNaN(tempValue)) tempAnswerValues[qid] = tempValue;
+  updateZoneSummary(chKey);
+  updateGlobalProgress();
+  refreshChapterScore(chKey);
+
+  if (sev !== 'conf' && sev !== 'na' && sev !== 'nv') {
+    let titre = qDef.label;
+    if (qDef.type === 'temp') titre += ' — valeur mesurée: ' + tempValue + '°C';
+    const refText = chapterName(chKey) + ' · ' + qDef.ref + (qDef.risque ? ' · ' + qDef.risque : '');
+    const delai = defaultDelai(sev);
+    addNcCard(titre, sev, refText, qid);
+    addPacCard(titre, delai, qDef.ref, 'Corriger la non-conformité identifiée lors du questionnaire.', qid);
+  }
+  saveState();
+}
+
+function updateZoneSummary(chKey) {
+  const block = document.getElementById('qz_' + chKey);
+  const summaryEl = block.querySelector('[data-role="summary"]');
+  const ch = CHAPTERS.find(function(c) { return c.key === chKey; });
+  let answered = 0, nonConf = 0;
+  Object.keys(questionnaireState).forEach(function(qid) {
+    if (qid.indexOf(chKey + '_') === 0) {
+      answered++;
+      if (questionnaireState[qid] !== 'conf' && questionnaireState[qid] !== 'na' && questionnaireState[qid] !== 'nv') nonConf++;
+    }
+  });
+  summaryEl.textContent = answered + ' / ' + ch.criteria.length + ' critère(s) répondu(s)' + (nonConf ? ' · ' + nonConf + ' non-conforme(s)' : '');
+}
+
+function updateGlobalProgress() {
+  let total = 0;
+  CHAPTERS.forEach(function(ch) { total += ch.criteria.length; });
+  const answered = Object.keys(questionnaireState).length;
+  const missing = total - answered;
+  const note = document.getElementById('printNote');
+  if (!note) return;
+  if (missing > 0) {
+    note.innerHTML = '⚠️ ' + missing + ' critère(s) sur ' + total + ' sans réponse. Tu peux quand même imprimer ou générer le PDF — les critères non répondus ne bloquent rien et resteront simplement absents du rapport détaillé.';
+  } else {
+    note.innerHTML = '✅ Les ' + total + ' critères ont une réponse. Le PDF peut être généré.';
+  }
+}
+
+
+/* ================= SAUVEGARDE / RESTAURATION AUTOMATIQUE (localStorage) ================= */
+const STORAGE_KEY = 'verdict360_rapport_manuel_v1';
+let restoringState = false;
+
+function saveState() {
+  if (restoringState) return;
+  try {
+    const chapterScores = {};
+    document.querySelectorAll('.zscore').forEach(function(el) {
+      chapterScores[el.getAttribute('data-zone')] = { value: el.value, dirty: !!chapterScoreDirty[el.getAttribute('data-zone')] };
+    });
+    const state = {
+      savedAt: new Date().toISOString(),
+      ident: {
+        etab: (document.getElementById('fEtab') || {}).value || '',
+        adresse: (document.getElementById('fAdresse') || {}).value || '',
+        resp: (document.getElementById('fResp') || {}).value || '',
+        date: (document.getElementById('fDate') || {}).value || ''
+      },
+      ref: (document.getElementById('refInput') || {}).value || '',
+      delaiSuivi: (document.getElementById('delaiSuivi') || {}).value || '',
+      questionnaireState: questionnaireState,
+      tempAnswerValues: tempAnswerValues,
+      chapterScores: chapterScores,
+      globalScore: { value: (document.getElementById('globalPct') || {}).value || '100', dirty: globalScoreDirty }
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const ind = document.getElementById('saveIndicator');
+    if (ind) {
+      ind.textContent = '💾 Sauvegardé automatiquement';
+      clearTimeout(window._saveIndTimeout);
+      window._saveIndTimeout = setTimeout(function() {
+        if (ind) ind.textContent = '💾 Sauvegarde automatique activée';
+      }, 1500);
+    }
+  } catch (e) {
+    console.error('saveState error', e);
+  }
+}
+
+function loadState() {
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  let state;
+  try { state = JSON.parse(raw); } catch (e) { return; }
+  if (!state) return;
+
+  restoringState = true;
+  try {
+    if (state.ident) {
+      if (document.getElementById('fEtab')) document.getElementById('fEtab').value = state.ident.etab || '';
+      if (document.getElementById('fAdresse')) document.getElementById('fAdresse').value = state.ident.adresse || '';
+      if (document.getElementById('fResp')) document.getElementById('fResp').value = state.ident.resp || '';
+      if (document.getElementById('fDate')) document.getElementById('fDate').value = state.ident.date || '';
+    }
+    if (state.ref && document.getElementById('refInput')) document.getElementById('refInput').value = state.ref;
+    if (state.delaiSuivi && document.getElementById('delaiSuivi')) document.getElementById('delaiSuivi').value = state.delaiSuivi;
+
+    // Rejoue chaque réponse enregistrée pour régénérer pills, cartes NC/PAC et scores
+    if (state.questionnaireState) {
+      Object.keys(state.questionnaireState).forEach(function(qid) {
+        const sev = state.questionnaireState[qid];
+        const item = document.querySelector('.qitem[data-qid="' + qid + '"]');
+        if (!item) return;
+        const chKey = qid.substring(0, qid.indexOf('_'));
+        const tempValue = state.tempAnswerValues ? state.tempAnswerValues[qid] : undefined;
+        applyAnswerUI(chKey, item, qid, sev, tempValue, false);
+      });
+    }
+
+    // Applique les scores manuels sauvegardés (écrase les valeurs recalculées si l'utilisateur les avait modifiées)
+    if (state.chapterScores) {
+      Object.keys(state.chapterScores).forEach(function(chKey) {
+        const saved = state.chapterScores[chKey];
+        const input = document.querySelector('.zscore[data-zone="' + chKey + '"]');
+        if (!input || !saved) return;
+        if (saved.dirty) {
+          chapterScoreDirty[chKey] = true;
+          input.value = saved.value;
+          applyPctColor(input);
+        }
+      });
+    }
+    if (state.globalScore && state.globalScore.dirty) {
+      globalScoreDirty = true;
+      const globalEl = document.getElementById('globalPct');
+      globalEl.value = state.globalScore.value;
+      applyPctColor(globalEl);
+    } else {
+      refreshGlobalScore();
+    }
+
+    // Ouvre les chapitres qui contiennent au moins une réponse, pour montrer où l'inspecteur en était
+    CHAPTERS.forEach(function(ch) {
+      const hasAnswer = Object.keys(questionnaireState).some(function(qid) { return qid.indexOf(ch.key + '_') === 0; });
+      if (hasAnswer) {
+        const block = document.getElementById('qz_' + ch.key);
+        if (block) block.classList.add('open');
+      }
+    });
+
+    const ind = document.getElementById('saveIndicator');
+    if (ind) ind.textContent = '💾 Inspection précédente restaurée';
+  } catch (e) {
+    console.error('loadState error', e);
+  } finally {
+    restoringState = false;
+  }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// Sauvegarde automatique des champs qui ne passent pas par handleQuestionAnswer
+['fEtab','fAdresse','fResp','fDate','refInput','delaiSuivi'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', saveState);
+});
+document.getElementById('resetInspectionBtn').addEventListener('click', function() {
+  if (confirm('Effacer toutes les réponses et recommencer une nouvelle inspection? Cette action est irréversible.')) {
+    clearSavedState();
+    location.reload();
+  }
+});
+
+
+buildQuestionnaire();
+loadState();
+// pacPla n'existe pas encore en tant que div distinct — on le crée si besoin
+(function ensurePacPla() {
+  if (!document.getElementById('pacPla')) {
+    const div = document.createElement('div');
+    div.id = 'pacPla';
+    document.getElementById('pacU48').insertAdjacentElement('afterend', div);
+  }
+})();
+
+/* ================= SIGNATURES TACTILES ================= */
+/* ================= IMPRESSION / PDF ================= */
+function doPrint() {
+  const note = document.getElementById('printNote');
+  const original = note ? note.innerHTML : null;
+  if (note) note.innerHTML = '🖨️ Ouverture de la boîte d\'impression…';
+  try {
+    if (typeof window.print !== 'function') throw new Error('print indisponible');
+    window.print();
+    if (note && original !== null) { setTimeout(function() { note.innerHTML = original; }, 1500); }
+  } catch (e) {
+    if (note) note.innerHTML = '⚠️ L\'impression automatique a échoué (' + (e && e.message ? e.message : 'erreur inconnue') + ').';
+    alert(
+      "L'impression n'a pas pu démarrer automatiquement.\n\n" +
+      "Sur iPhone : touche l'icône de partage (⬆️) en bas de Safari, choisis « Imprimer », puis pince l'aperçu pour l'agrandir et touche « Partager » → « Enregistrer dans Fichiers » pour obtenir un PDF."
+    );
+  }
+}
+
+function setupSig(id) {
+  try {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    function resize() {
+      const ratio = window.devicePixelRatio || 1;
+      const w = canvas.offsetWidth || 300;
+      const h = canvas.offsetHeight || 120;
+      canvas.width = w * ratio;
+      canvas.height = h * ratio;
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#1A1A1A';
+    }
+    resize();
+    let drawing = false;
+    function pos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+    }
+    function start(e) { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
+    function move(e) { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
+    function end() { drawing = false; }
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    canvas.addEventListener('touchend', end);
+  } catch (e) {
+    console.error('setupSig error for ' + id, e);
+  }
+}
+function clearSig(id) {
+  try {
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  } catch (e) {
+    console.error('clearSig error', e);
+  }
+}
+try { setupSig('sigClient'); } catch (e) { console.error(e); }
+try { setupSig('sigInspecteur'); } catch (e) { console.error(e); }
+document.querySelectorAll('.sigpad').forEach(function(c) {
+  c.addEventListener('touchstart', function() { document.body.style.overflow = 'hidden'; });
+  c.addEventListener('touchend', function() { document.body.style.overflow = 'auto'; });
+});
+</script>
+
+</body>
+</html>
