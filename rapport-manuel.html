@@ -256,11 +256,15 @@
     </div>
   </div>
 
-  <button class="btn-gold no-print" id="printBtn" onclick="doPrint()">🖨 Générer le PDF / Imprimer</button>
-  <div class="print-note no-print" id="printNote">Tu peux imprimer ou générer le PDF même s'il manque des réponses — les critères non répondus ne bloquent rien.</div>
+  <button class="btn-gold no-print" id="printBtn" onclick="doPrint()">📄 Comment obtenir mon PDF ?</button>
+  <div class="print-note no-print" id="printNote">Tu peux générer le PDF même s'il manque des réponses — les critères non répondus ne bloquent rien.</div>
   <div class="print-note no-print" style="border-left-color:#546E7A;">
-    <strong>Le bouton n'ouvre rien?</strong> Ce fichier doit être ouvert dans <strong>Safari</strong> (ou Chrome), pas dans l'aperçu intégré d'une app — sinon le navigateur bloque l'impression.<br>
-    Solution manuelle sur iPhone : icône de partage <strong>⬆️</strong> en bas de Safari → <strong>Imprimer</strong> → pincer l'aperçu pour l'agrandir → <strong>Partager</strong> en haut à gauche → <strong>Enregistrer dans Fichiers</strong> pour obtenir un vrai PDF.
+    <strong>Étapes pour obtenir ton PDF :</strong><br>
+    1. Icône de partage <strong>⬆️</strong> en bas de Safari<br>
+    2. Touche <strong>Imprimer</strong><br>
+    3. Pince l'aperçu avec deux doigts pour l'agrandir<br>
+    4. En haut à gauche de l'aperçu, touche <strong>Partager</strong><br>
+    5. Choisis <strong>Enregistrer dans Fichiers</strong>
   </div>
 
   <div class="legal">
@@ -1111,20 +1115,17 @@ loadState();
 /* ================= SIGNATURES TACTILES ================= */
 /* ================= IMPRESSION / PDF ================= */
 function doPrint() {
-  const note = document.getElementById('printNote');
-  const original = note ? note.innerHTML : null;
-  if (note) note.innerHTML = '🖨️ Ouverture de la boîte d\'impression…';
-  try {
-    if (typeof window.print !== 'function') throw new Error('print indisponible');
-    window.print();
-    if (note && original !== null) { setTimeout(function() { note.innerHTML = original; }, 1500); }
-  } catch (e) {
-    if (note) note.innerHTML = '⚠️ L\'impression automatique a échoué (' + (e && e.message ? e.message : 'erreur inconnue') + ').';
-    alert(
-      "L'impression n'a pas pu démarrer automatiquement.\n\n" +
-      "Sur iPhone : touche l'icône de partage (⬆️) en bas de Safari, choisis « Imprimer », puis pince l'aperçu pour l'agrandir et touche « Partager » → « Enregistrer dans Fichiers » pour obtenir un PDF."
-    );
-  }
+  // Sur iPhone, window.print() est peu fiable (limite connue d'iOS Safari : n'affiche
+  // souvent rien si aucune imprimante AirPrint n'est détectée). On guide donc directement
+  // vers la méthode manuelle, qui fonctionne toujours.
+  alert(
+    "Pour obtenir ton PDF :\n\n" +
+    "1. Touche l'icône de partage ⬆️ tout en bas de Safari (pas ce bouton)\n" +
+    "2. Choisis « Imprimer »\n" +
+    "3. Pince l'aperçu avec deux doigts pour l'agrandir\n" +
+    "4. En haut à gauche de l'aperçu agrandi, touche « Partager »\n" +
+    "5. Choisis « Enregistrer dans Fichiers »"
+  );
 }
 
 function setupSig(id) {
